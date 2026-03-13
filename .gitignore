@@ -1,0 +1,22 @@
+# Raw demo photos (31MB uncompressed; use demo_students.zip instead)
+demo_photos/
+
+# Development/generation scripts
+generate_demo_photos.py
+demo_photo_prompts.md
+gemini_image_gen.txt
+
+# Original course export and research
+21135_7620_2026-03-13.zip
+Learn My Students.html
+learn_my_students.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel/
+
+# Claude
+.claude/

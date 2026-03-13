@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learn My Students — Master Student Names with Spaced Repetition</title>
+  <meta name="description" content="A free, private flashcard app for university instructors. Learn student names and faces using FSRS spaced repetition. Works offline. No sign-up required.">
+  <meta name="theme-color" content="#51247A">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Learn My Students">
+  <meta property="og:description" content="Master student names with spaced repetition flashcards. 100% private, works offline.">
+  <meta property="og:image" content="/assets/og-image.png">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Learn My Students">
+  <meta name="twitter:description" content="Master student names with spaced repetition flashcards. 100% private, works offline.">
+  <meta name="twitter:image" content="/assets/og-image.png">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/app/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ -->
+<!-- NAV                                 -->
+<!-- ═══════════════════════════════════ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-brand">
+      <img src="/app/icons/icon-192.png" alt="" class="nav-icon">
+      <span>Learn My Students</span>
+    </a>
+    <div class="nav-actions">
+      <a href="/app/?demo=1" class="nav-link">Try Demo</a>
+      <a href="/app/" class="btn btn-primary btn-sm">Open App</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════ -->
+<!-- HERO                                -->
+<!-- ═══════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <h1>Learn Every Student's Name</h1>
+      <p class="hero-subtitle">A free, private flashcard app that uses spaced repetition to help university instructors master student names and faces.</p>
+      <div class="hero-ctas">
+        <a href="/app/" class="btn btn-primary btn-lg">Open App</a>
+        <a href="/app/?demo=1" class="btn btn-outline btn-lg">Try Demo Class</a>
+      </div>
+      <p class="hero-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg>
+        No sign-up. No server. All data stays on your device.
+      </p>
+    </div>
+    <div class="hero-visual">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="mock-topbar">
+            <span class="mock-back">&larr; Back</span>
+            <span class="mock-stats"><span class="mock-correct">3 correct</span> <span class="mock-missed">1 missed</span></span>
+          </div>
+          <div class="mock-mastery">
+            <div class="mock-mastery-fill" style="width: 35%"></div>
+            <span class="mock-mastery-text">7/20 learned</span>
+          </div>
+          <div class="mock-card">
+            <img src="/assets/thumb-li-mei.jpg" class="mock-photo" alt="Demo student" loading="lazy">
+            <div class="mock-input-area">
+              <p class="mock-prompt">Who is this student?</p>
+              <div class="mock-input-row">
+                <div class="mock-input"><span class="mock-cursor">Mei</span></div>
+                <div class="mock-btn">Check</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ -->
+<!-- HOW IT WORKS                        -->
+<!-- ═══════════════════════════════════ -->
+<section class="how-it-works" id="how">
+  <div class="section-inner">
+    <h2 class="section-title">How It Works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <h3>Import</h3>
+        <p>Upload a folder or ZIP of student photos named <code>LastName, First (ID).jpg</code></p>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <h3>Study</h3>
+        <p>Progressive phases build from viewing to multiple choice to typed recall</p>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <h3>Master</h3>
+        <p>Spaced repetition schedules reviews at optimal intervals so names stick long-term</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ -->
+<!-- FEATURES BENTO GRID                 -->
+<!-- ═══════════════════════════════════ -->
+<section class="features" id="features">
+  <div class="section-inner">
+    <h2 class="section-title">Built for Real Classrooms</h2>
+    <p class="section-subtitle">Every feature is backed by cognitive science research</p>
+    <div class="bento-grid">
+      <div class="bento-card bento-wide">
+        <div class="bento-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <h3>FSRS v4.5 Spaced Repetition</h3>
+        <p>The same algorithm used by Anki, trained on 700 million reviews. Calculates optimal review intervals using a power-law forgetting curve so you study efficiently.</p>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <h3>Progressive Difficulty</h3>
+        <p>Start by viewing names, progress to multiple choice, then typed recall with hints, and finally full recall.</p>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <h3>Smart Matching</h3>
+        <p>Jaro-Winkler string similarity, phonetic matching, and a nickname database give credit for close answers.</p>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h3>100% Private</h3>
+        <p>All photos and data stay in your browser's IndexedDB. Nothing is ever uploaded. FERPA and Australian Privacy Act safe.</p>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></svg>
+        </div>
+        <h3>Works Offline</h3>
+        <p>Install as a native app on any device. Study on the bus, in the office, or anywhere without internet.</p>
+      </div>
+      <div class="bento-card">
+        <div class="bento-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </div>
+        <h3>Name Pronunciation</h3>
+        <p>Hear any student's name spoken aloud using your browser's built-in speech synthesis. No external services.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ -->
+<!-- DEMO GRID                           -->
+<!-- ═══════════════════════════════════ -->
+<section class="demo-section" id="demo">
+  <div class="section-inner">
+    <h2 class="section-title">See It In Action</h2>
+    <p class="section-subtitle">Try with our demo class of 20 AI-generated students</p>
+    <div class="demo-grid">
+      <div class="demo-student">
+        <img src="/assets/thumb-li-mei.jpg" alt="Li, Mei" loading="lazy">
+        <span class="demo-name">Mei Li</span>
+      </div>
+      <div class="demo-student">
+        <img src="/assets/thumb-chen-sophie.jpg" alt="Chen, Sophie" loading="lazy">
+        <span class="demo-name">Sophie Chen</span>
+      </div>
+      <div class="demo-student">
+        <img src="/assets/thumb-mitchell-lachlan.jpg" alt="Mitchell, Lachlan" loading="lazy">
+        <span class="demo-name">Lachlan Mitchell</span>
+      </div>
+      <div class="demo-student">
+        <img src="/assets/thumb-harris-jack.jpg" alt="Harris, Jack" loading="lazy">
+        <span class="demo-name">Jack Harris</span>
+      </div>
+      <div class="demo-student">
+        <img src="/assets/thumb-sharma-arjun.jpg" alt="Sharma, Arjun" loading="lazy">
+        <span class="demo-name">Arjun Sharma</span>
+      </div>
+      <div class="demo-student">
+        <img src="/assets/thumb-patel-rohan.jpg" alt="Patel, Rohan" loading="lazy">
+        <span class="demo-name">Rohan Patel</span>
+      </div>
+      <div class="demo-student">
+        <img src="/assets/thumb-taylor-emma.jpg" alt="Taylor, Emma" loading="lazy">
+        <span class="demo-name">Emma Taylor</span>
+      </div>
+      <div class="demo-student">
+        <img src="/assets/thumb-baker-mia.jpg" alt="Baker, Mia" loading="lazy">
+        <span class="demo-name">Mia Baker</span>
+      </div>
+    </div>
+    <a href="/app/?demo=1" class="btn btn-primary btn-lg demo-cta">Try Demo Class</a>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ -->
+<!-- PRIVACY BANNER                      -->
+<!-- ═══════════════════════════════════ -->
+<section class="privacy-banner">
+  <div class="section-inner">
+    <div class="privacy-icon">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <h2>Your Students' Privacy Is Sacred</h2>
+    <p>Student photos and names never leave your device. No accounts, no analytics, no server. Everything runs locally in your browser using IndexedDB storage.</p>
+    <div class="trust-badges">
+      <div class="trust-badge">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>No Server</span>
+      </div>
+      <div class="trust-badge">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        <span>No Tracking</span>
+      </div>
+      <div class="trust-badge">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>No Accounts</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ -->
+<!-- SCIENCE SECTION                     -->
+<!-- ═══════════════════════════════════ -->
+<section class="science-section" id="science">
+  <div class="section-inner">
+    <h2 class="section-title">The Science Behind It</h2>
+    <div class="science-grid">
+      <div class="science-card">
+        <h3>The Baker-Baker Paradox</h3>
+        <p>Told someone is a baker (occupation), you remember it easily because it connects to existing knowledge. Told their name is Baker, it's far harder. Names are semantically arbitrary, which is why learning them requires deliberate spaced practice.</p>
+      </div>
+      <div class="science-card">
+        <h3>Spaced Repetition Works</h3>
+        <p>FSRS v4.5 models the forgetting curve with 17 optimised parameters. It shows you a face right before you'd forget it, making each review maximally effective. Studies show 99.6% superiority over older algorithms like SM-2.</p>
+      </div>
+      <div class="science-card">
+        <h3>Testing Effect</h3>
+        <p>Actively recalling a name strengthens the memory far more than passively reviewing it. That's why this app progresses from easy recognition to challenging typed recall — each phase builds deeper memory traces.</p>
+      </div>
+      <div class="science-card">
+        <h3>Elaborative Encoding</h3>
+        <p>Hearing a name pronounced, seeing it spelled, and typing it yourself creates multiple memory pathways. Each mode of engagement adds another retrieval cue, making the name easier to recall when you see the face in class.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ -->
+<!-- CTA SECTION                         -->
+<!-- ═══════════════════════════════════ -->
+<section class="cta-section">
+  <div class="section-inner">
+    <h2>Ready to know every student by name?</h2>
+    <p>It takes most instructors just 2-3 sessions to start seeing results.</p>
+    <div class="hero-ctas">
+      <a href="/app/" class="btn btn-white btn-lg">Get Started</a>
+      <a href="/app/?demo=1" class="btn btn-outline-white btn-lg">Try Demo First</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ -->
+<!-- FOOTER                              -->
+<!-- ═══════════════════════════════════ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="/app/icons/icon-192.png" alt="" class="footer-icon">
+      <span>Learn My Students</span>
+    </div>
+    <p class="footer-tagline">Built for university instructors who care about their students.</p>
+    <p class="footer-credit">Made at The University of Queensland</p>
+  </div>
+</footer>
+
+<!-- Scroll animations -->
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.step, .bento-card, .demo-student, .science-card').forEach(el => {
+    el.classList.add('animate-in');
+    observer.observe(el);
+  });
+</script>
+
+</body>
+</html>

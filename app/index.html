@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Learn My Students</title>
+  <meta name="description" content="Master student names and faces with spaced repetition flashcards. Private, free, and works offline.">
+  <meta name="theme-color" content="#51247A">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+
+<!-- ══════════════════════════════════ -->
+<!-- SETUP SCREEN                       -->
+<!-- ══════════════════════════════════ -->
+<div id="setupScreen" class="screen active">
+  <div class="setup-card">
+    <div class="setup-header">
+      <h1>Learn My Students</h1>
+      <p class="subtitle">Master names and faces with smart flashcards</p>
+      <div id="streakDisplay" class="hidden"></div>
+    </div>
+
+    <!-- Existing Classes -->
+    <div id="existingClasses" class="hidden">
+      <h2 class="section-title">Your Classes</h2>
+      <div id="classList" class="class-list"></div>
+      <div class="section-divider">
+        <span>Import a new class</span>
+      </div>
+    </div>
+
+    <!-- New Import -->
+    <div class="import-section">
+      <div class="class-name-row">
+        <input type="text" id="classNameInput" class="class-name-input" placeholder="Class name (e.g. BIOL1020 Sem 1)" autocomplete="off">
+      </div>
+
+      <button id="folderBtn" class="setup-btn">
+        <span class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+        </span>
+        <span id="folderLabel">Select student photos folder</span>
+      </button>
+      <input type="file" id="folderInput" webkitdirectory class="hidden">
+
+      <div class="or-divider">or</div>
+
+      <button id="zipBtn" class="setup-btn">
+        <span class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 10v2h-4v-2H8l4-4 4 4h-2z"/></svg>
+        </span>
+        <span id="zipLabel">Upload zipped photos (.zip)</span>
+      </button>
+      <input type="file" id="zipInput" accept=".zip" class="hidden">
+
+      <p class="format-hint">Photos should be named: <code>LastName, FirstName (ID).jpg</code></p>
+    </div>
+
+    <div class="setup-footer">
+      <button class="icon-btn" id="settingsBtn" title="Settings">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      </button>
+      <div id="deviceHint" class="device-hint"></div>
+    </div>
+
+    <div class="privacy-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg>
+      <span>All data stays on your device</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- QUIZ SCREEN                        -->
+<!-- ══════════════════════════════════ -->
+<div id="quizScreen" class="screen">
+  <div class="top-bar">
+    <button class="back-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      Back
+    </button>
+    <div class="stats">
+      <span class="correct" id="statCorrect">0 correct</span>
+      <span class="incorrect" id="statIncorrect">0 missed</span>
+    </div>
+  </div>
+
+  <!-- Mastery Bar -->
+  <div class="mastery-bar" id="masteryBar">
+    <div class="mastery-fill" id="masteryFill" style="width: 0%"></div>
+    <span class="mastery-text" id="masteryText">0/0 learned</span>
+  </div>
+
+  <!-- Quiz Card -->
+  <div class="quiz-card" id="quizCard">
+    <div class="photo-container" id="photoContainer"></div>
+    <div class="confidence-bar"><div class="confidence-fill" id="confidenceFill" style="width:0%"></div></div>
+    <div class="input-area" id="inputArea">
+      <!-- Dynamically populated by quiz.js -->
+    </div>
+  </div>
+
+  <!-- Keyboard hints (desktop) -->
+  <div class="kbd-hints" id="kbdHints">
+    <span><kbd>Enter</kbd> Check / Next</span>
+    <span><kbd>Esc</kbd> Skip</span>
+    <span><kbd>Space</kbd> Hear name</span>
+    <span>...or just start typing</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SESSION SUMMARY SCREEN             -->
+<!-- ══════════════════════════════════ -->
+<div id="summaryScreen" class="screen">
+  <div class="summary-card">
+    <div id="summaryContent">
+      <!-- Dynamically populated by app.js -->
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SETTINGS SCREEN                    -->
+<!-- ══════════════════════════════════ -->
+<div id="settingsScreen" class="screen">
+  <div class="settings-card">
+    <div class="settings-header">
+      <button class="back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        Back
+      </button>
+      <h2>Settings</h2>
+    </div>
+    <div id="settingsContent">
+      <!-- Dynamically populated by app.js -->
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- PROGRESS SCREEN                    -->
+<!-- ══════════════════════════════════ -->
+<div id="progressScreen" class="screen">
+  <div class="progress-card">
+    <div class="progress-header">
+      <button class="back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        Back
+      </button>
+      <h2>Student Progress</h2>
+    </div>
+    <div id="progressContent">
+      <!-- Dynamically populated -->
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- LOADING OVERLAY                    -->
+<!-- ══════════════════════════════════ -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">Loading...</div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- CONFIRM MODAL                      -->
+<!-- ══════════════════════════════════ -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-card">
+    <p class="confirm-message"></p>
+    <div class="modal-actions">
+      <button class="confirm-no">Cancel</button>
+      <button class="confirm-yes">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
