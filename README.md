@@ -7,7 +7,7 @@
 
   A free, privacy-first web app for university instructors who want to learn every student's name.
 
-  [**Try the App**](https://learn-my-students.vercel.app/app/) &nbsp;&middot;&nbsp; [**Try with Demo Class**](https://learn-my-students.vercel.app/app/?demo=1) &nbsp;&middot;&nbsp; [**Landing Page**](https://learn-my-students.vercel.app)
+  [**Try the App**](https://learnmystudents.vercel.app/app/) &nbsp;&middot;&nbsp; [**Try with Demo Class**](https://learnmystudents.vercel.app/app/?demo=1) &nbsp;&middot;&nbsp; [**Landing Page**](https://learnmystudents.vercel.app)
 
   ---
 </div>
@@ -75,7 +75,7 @@ You can upload either a folder of photos or a ZIP file.
 
 ### 2. Open the App
 
-Visit **[learn-my-students.vercel.app/app/](https://learn-my-students.vercel.app/app/)** — or try the [demo class](https://learn-my-students.vercel.app/app/?demo=1) first with 20 AI-generated students.
+Visit **[learnmystudents.vercel.app/app/](https://learnmystudents.vercel.app/app/)** — or try the [demo class](https://learnmystudents.vercel.app/app/?demo=1) first with 20 AI-generated students.
 
 ### 3. Import & Study
 

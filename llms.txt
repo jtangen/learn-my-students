@@ -6,8 +6,8 @@ A free, privacy-first PWA for university instructors. All data stays on-device.
 
 ## Links
 
-- App: https://learn-my-students.vercel.app/app/
-- Demo: https://learn-my-students.vercel.app/app/?demo=1
+- App: https://learnmystudents.vercel.app/app/
+- Demo: https://learnmystudents.vercel.app/app/?demo=1
 - Source: https://github.com/jtangen/learn-my-students
 
 ## What This Is
