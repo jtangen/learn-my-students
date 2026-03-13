@@ -21,9 +21,14 @@ async function handleDemoParam() {
   // Clear param to prevent re-triggering
   history.replaceState(null, '', window.location.pathname + window.location.hash);
 
-  // Only auto-import if no classes exist yet
+  // Skip if demo class already exists
   const classes = await getClasses();
-  if (classes.length > 0) return;
+  if (classes.some(c => c.name.includes('Demo'))) {
+    // Demo already imported, just start it
+    const demoClass = classes.find(c => c.name.includes('Demo'));
+    await startStudySession(demoClass.id);
+    return;
+  }
 
   showLoading('Loading demo class...');
   try {

@@ -3,7 +3,7 @@
   "outputDirectory": ".",
   "framework": null,
   "cleanUrls": true,
-  "trailingSlash": false,
+  "trailingSlash": true,
   "headers": [
     {
       "source": "/app/sw.js",
@@ -25,7 +25,7 @@
       ]
     }
   ],
-  "rewrites": [
-    { "source": "/app", "destination": "/app/index.html" }
+  "redirects": [
+    { "source": "/app", "destination": "/app/", "statusCode": 301 }
   ]
 }
