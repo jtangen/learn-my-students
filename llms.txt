@@ -1,0 +1,80 @@
+# Learn My Students
+
+> Master student names and faces with spaced repetition flashcards.
+
+A free, privacy-first PWA for university instructors. All data stays on-device.
+
+## Links
+
+- App: https://learn-my-students.vercel.app/app/
+- Demo: https://learn-my-students.vercel.app/app/?demo=1
+- Source: https://github.com/jtangen/learn-my-students
+
+## What This Is
+
+A static web app (no backend, no build step) that helps university instructors learn student names through spaced repetition flashcards. Instructors upload student photos (ZIP or folder) named `LastName, FirstName (StudentID).jpg`, and the app creates progressive-difficulty flashcards using the FSRS v4.5 algorithm.
+
+## Key Architecture
+
+- Zero-build static site with ES modules
+- IndexedDB via Dexie.js for photo/progress storage (no server)
+- FSRS v4.5 spaced repetition in `app/js/fsrs.js`
+- Jaro-Winkler + Double Metaphone fuzzy matching in `app/js/matching.js`
+- Web Speech API for pronunciation (no external services)
+- Service worker for offline PWA support
+
+## File Structure
+
+```
+app/index.html          - App shell (5 screens)
+app/manifest.json       - PWA manifest
+app/sw.js               - Service worker (cache-first)
+app/css/styles.css      - All styles
+app/js/app.js           - Entry point, routing, screen management
+app/js/db.js            - Dexie.js IndexedDB (classes, students, fsrsCards, sessions, settings)
+app/js/fsrs.js          - FSRS v4.5 algorithm (createNewCard, reviewCard, Grade, State)
+app/js/scheduler.js     - Session scheduling, batch intro, 4 difficulty phases
+app/js/quiz.js          - Quiz UI (study, multiple choice, hinted recall, full recall, reverse)
+app/js/import.js        - ZIP/folder import, filename parser, thumbnail generation
+app/js/matching.js      - Jaro-Winkler, Double Metaphone, nickname table, matchName()
+app/js/speech.js        - Web Speech API wrapper
+app/js/stats.js         - Streaks, daily goals, session summaries, milestones
+app/js/ui.js            - Shared UI helpers (showScreen, showToast, etc.)
+index.html              - Landing/marketing page
+styles.css              - Landing page styles
+```
+
+## Photo Format
+
+Files must be named: `LastName, FirstName (StudentID).jpg`
+Example: `Smith, Jane (12345678).jpg`
+
+The parser is in `app/js/import.js`, function `parseStudentFromName()`.
+
+## Running Locally
+
+Serve the project root with any static HTTP server:
+```
+python -m http.server 8000
+```
+Then visit http://localhost:8000/app/
+
+## For UQ Staff
+
+Download student headshots from portal.my.uq.edu.au:
+1. Log in → My courses → Select course
+2. Course Information → Student headshots tab
+3. Download .zip (already in correct filename format)
+
+## Privacy
+
+All student data stays in the browser's IndexedDB. No server calls, no analytics, no accounts. FERPA and Australian Privacy Act compliant. Photos are stored as Blob objects and never transmitted.
+
+## Tech Details
+
+- FSRS v4.5: 17-parameter model, power-law forgetting curve, card states (new → learning → review → relearning)
+- Progressive difficulty: study (4s view) → MC (4 options) → hinted recall (first letter) → full typed recall
+- Fuzzy matching thresholds: Jaro-Winkler ≥0.92 correct, 0.85-0.92 almost, Double Metaphone for phonetic
+- Batch intro: 6 new students per session, ~75% review / 25% new interleaving
+- Daily goals: casual (5), regular (15), intense (30) reviews
+- Streaks: minimum 5 reviews to count, 2 freeze days, replenish every 7 days

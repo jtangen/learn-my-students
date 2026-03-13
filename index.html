@@ -275,6 +275,44 @@
 </section>
 
 <!-- ═══════════════════════════════════ -->
+<!-- UQ HEADSHOT GUIDE                   -->
+<!-- ═══════════════════════════════════ -->
+<section class="guide-section" id="get-photos">
+  <div class="section-inner">
+    <h2 class="section-title">Getting Your Student Photos</h2>
+    <p class="section-subtitle">UQ Course Coordinators can download headshots in 4 clicks</p>
+
+    <div class="guide-card">
+      <div class="guide-badge">UQ Staff</div>
+      <div class="guide-steps">
+        <div class="guide-step">
+          <div class="guide-step-num">1</div>
+          <div>Go to <a href="https://portal.my.uq.edu.au" target="_blank" rel="noopener"><strong>portal.my.uq.edu.au</strong></a> and log in with Single Sign-On</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">2</div>
+          <div>Select <strong>My courses</strong> from the side menu, then click your course</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">3</div>
+          <div>Under <strong>Course Information</strong>, select the <strong>Student headshots</strong> tab</div>
+        </div>
+        <div class="guide-step">
+          <div class="guide-step-num">4</div>
+          <div>Click <strong>Download .zip</strong> — the file is already in the correct format for this app</div>
+        </div>
+      </div>
+      <p class="guide-note">Headshots are available from Week 1 each semester. This feature is only available for Course Coordinators. See the <a href="https://elearning.uq.edu.au/staff-guides-original/content-area/access-student-headshots-original" target="_blank" rel="noopener">full UQ guide</a> for details.</p>
+    </div>
+
+    <div class="guide-other">
+      <h3>Other universities?</h3>
+      <p>Export student photos from your LMS or student information system. Name each file <code>LastName, FirstName (ID).jpg</code> and upload as a folder or ZIP.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ -->
 <!-- CTA SECTION                         -->
 <!-- ═══════════════════════════════════ -->
 <section class="cta-section">
@@ -297,6 +335,11 @@
       <img src="/app/icons/icon-192.png" alt="" class="footer-icon">
       <span>Learn My Students</span>
     </div>
+    <div class="footer-links">
+      <a href="/app/">Open App</a>
+      <a href="https://github.com/jtangen/learn-my-students" target="_blank" rel="noopener">GitHub</a>
+      <a href="#get-photos">Get Photos</a>
+    </div>
     <p class="footer-tagline">Built for university instructors who care about their students.</p>
     <p class="footer-credit">Made at The University of Queensland</p>
   </div>
@@ -313,7 +356,7 @@
     });
   }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
-  document.querySelectorAll('.step, .bento-card, .demo-student, .science-card').forEach(el => {
+  document.querySelectorAll('.step, .bento-card, .demo-student, .science-card, .guide-card, .guide-other').forEach(el => {
     el.classList.add('animate-in');
     observer.observe(el);
   });
