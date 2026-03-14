@@ -501,7 +501,8 @@ function handleKeyboard(e) {
   const checkBtn = document.getElementById('checkBtn');
   const studyNextBtn = document.getElementById('studyNextBtn');
 
-  const isInInput = document.activeElement === nameInput;
+  const activeTag = document.activeElement?.tagName;
+  const isInInput = document.activeElement === nameInput || activeTag === 'TEXTAREA';
   const isAnswerPhase = !!nextBtn;
   const isQuestionPhase = !!checkBtn;
   const isStudyPhase = !!studyNextBtn;
