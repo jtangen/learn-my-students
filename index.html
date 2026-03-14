@@ -87,6 +87,31 @@
 </section>
 
 <!-- ═══════════════════════════════════ -->
+<!-- WHY NAMES MATTER                    -->
+<!-- ═══════════════════════════════════ -->
+<section class="why-section">
+  <div class="section-inner">
+    <div class="why-stats">
+      <div class="why-stat">
+        <div class="why-number">85%</div>
+        <p>of students say it's important their instructor knows their name</p>
+        <cite>Cooper et al., 2017</cite>
+      </div>
+      <div class="why-stat">
+        <div class="why-number">53% &rarr; 78%</div>
+        <p>of names were known, but 78% of students <em>perceived</em> they were known. Just trying matters.</p>
+        <cite>Cooper et al., 2017</cite>
+      </div>
+      <div class="why-stat">
+        <div class="why-number">33%</div>
+        <p>reduction in achievement gaps for underrepresented students in active learning classes where they feel they belong</p>
+        <cite>Theobald et al., 2020</cite>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ -->
 <!-- HOW IT WORKS                        -->
 <!-- ═══════════════════════════════════ -->
 <section class="how-it-works" id="how">
@@ -356,7 +381,7 @@
     });
   }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
-  document.querySelectorAll('.step, .bento-card, .demo-student, .science-card, .guide-card, .guide-other').forEach(el => {
+  document.querySelectorAll('.why-stat, .step, .bento-card, .demo-student, .science-card, .guide-card, .guide-other').forEach(el => {
     el.classList.add('animate-in');
     observer.observe(el);
   });

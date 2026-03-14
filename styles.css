@@ -417,6 +417,52 @@ code {
   margin-bottom: 48px;
 }
 
+/* ─── Why Names Matter ─── */
+
+.why-section {
+  padding: 64px 24px;
+  background: #fff;
+  border-top: 1px solid rgba(81, 36, 122, 0.06);
+}
+
+.why-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  max-width: 960px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.why-stat {
+  transition: transform 0.2s ease;
+}
+
+.why-stat:hover {
+  transform: translateY(-2px);
+}
+
+.why-number {
+  font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+  font-weight: 800;
+  color: var(--purple);
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+
+.why-stat p {
+  color: #555;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.why-stat cite {
+  font-style: normal;
+  font-size: 0.75rem;
+  color: #999;
+}
+
 /* ─── How It Works ─── */
 
 .how-it-works {
@@ -859,6 +905,10 @@ code {
 }
 
 /* Stagger animation for grid children */
+.why-stats .why-stat.animate-in:nth-child(1) { transition-delay: 0s; }
+.why-stats .why-stat.animate-in:nth-child(2) { transition-delay: 0.1s; }
+.why-stats .why-stat.animate-in:nth-child(3) { transition-delay: 0.2s; }
+
 .steps .step.animate-in:nth-child(1) { transition-delay: 0s; }
 .steps .step.animate-in:nth-child(2) { transition-delay: 0.1s; }
 .steps .step.animate-in:nth-child(3) { transition-delay: 0.2s; }
@@ -907,6 +957,13 @@ code {
 
   .phone-frame {
     width: 240px;
+  }
+
+  .why-stats {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    max-width: 400px;
+    margin: 0 auto;
   }
 
   .steps {
@@ -975,6 +1032,10 @@ code {
 
   .section-inner {
     padding: 0 16px;
+  }
+
+  .why-section {
+    padding: 48px 16px;
   }
 
   .how-it-works,
