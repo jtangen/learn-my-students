@@ -3,7 +3,7 @@
 // Cache-first for app shell
 // ═══════════════════════════════════
 
-const CACHE_NAME = 'learn-my-students-v2';
+const CACHE_NAME = 'learn-my-students-v3';
 
 const PRECACHE_URLS = [
   '/app/',

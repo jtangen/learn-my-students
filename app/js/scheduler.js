@@ -137,7 +137,8 @@ export class SessionScheduler {
     if (card.state === State.NEW && card.encounterCount === 0) {
       phase = Phase.STUDY;
     } else if (card.encounterCount === 1) {
-      phase = Phase.MULTIPLE_CHOICE;
+      // Skip MC if fewer than 2 students (need at least 2 options)
+      phase = this.students.size >= 2 ? Phase.MULTIPLE_CHOICE : Phase.HINTED_RECALL;
     } else if (card.encounterCount === 2) {
       phase = Phase.HINTED_RECALL;
     } else {
@@ -161,8 +162,9 @@ export class SessionScheduler {
     const correct = this.students.get(correctStudentId);
     const others = [...this.students.values()].filter(s => s.id !== correctStudentId);
 
+    // If not enough students for full distractor set, return what we have
     if (!correct || others.length <= count) {
-      return others.sort(() => Math.random() - 0.5).slice(0, count);
+      return others.sort(() => Math.random() - 0.5);
     }
 
     // Split candidates by likely gender match

@@ -1341,7 +1341,301 @@ html { height: -webkit-fill-available; }
   font-size: 12px;
 }
 
-/* ─── DARK MODE SUPPORT (future) ─── */
+/* ─── DATA ACTIONS (Settings) ─── */
+.data-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: var(--purple-ghost);
+  color: var(--purple);
+  border: 1.5px solid var(--purple-pale);
+  border-radius: var(--radius-xs);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.secondary-btn:hover { background: var(--purple-pale); }
+
+.csv-class-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.csv-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--gray-50);
+  color: var(--gray-700);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-xs);
+  font-size: 13px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+}
+
+.csv-export-btn:hover { background: var(--gray-100); }
+
+/* ─── UPDATE BANNER ─── */
+.update-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--purple);
+  color: #fff;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 400;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.update-banner button {
+  padding: 6px 14px;
+  border: 2px solid #fff;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: #fff;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.update-banner .dismiss {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+/* ─── DASHBOARD ─── */
+.dash-section {
+  margin-bottom: 24px;
+}
+
+.dash-section h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.dash-state-bar {
+  display: flex;
+  height: 24px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--gray-200);
+  margin-bottom: 8px;
+}
+
+.dash-bar-segment {
+  transition: width 0.6s ease;
+  min-width: 2px;
+}
+
+.dash-bar-segment.mastered { background: var(--green); }
+.dash-bar-segment.review { background: var(--purple); }
+.dash-bar-segment.learning { background: var(--orange); }
+.dash-bar-segment.new { background: var(--gray-400); }
+
+.dash-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+.dash-legend-item { display: flex; align-items: center; gap: 4px; }
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot.mastered { background: var(--green); }
+.dot.review { background: var(--purple); }
+.dot.learning { background: var(--orange); }
+.dot.new { background: var(--gray-400); }
+
+.dash-forecast {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.dash-forecast-item {
+  text-align: center;
+  padding: 12px 8px;
+  background: var(--gray-50);
+  border-radius: var(--radius-sm);
+}
+
+.dash-forecast-count {
+  display: block;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--purple);
+}
+
+.dash-forecast-label {
+  display: block;
+  font-size: 11px;
+  color: var(--gray-500);
+  margin-top: 2px;
+}
+
+/* ─── ACCESSIBILITY ─── */
+*:focus-visible {
+  outline: 3px solid var(--purple);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* ─── MOBILE INPUT ZOOM FIX ─── */
+@media (max-width: 560px) {
+  input[type="text"],
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ─── DARK MODE ─── */
+[data-theme="dark"] {
+  --purple: #9B6FC4;
+  --purple-light: #B48AD8;
+  --purple-pale: #2a2040;
+  --purple-ghost: #1e1830;
+  --purple-dark: #7B4FA4;
+  --green: #66bb6a;
+  --green-light: #81c784;
+  --green-bg: #1b3a1b;
+  --red: #ef5350;
+  --red-bg: #3a1b1b;
+  --orange: #ffa726;
+  --orange-bg: #3a2a1b;
+  --gray-50: #1a1a2e;
+  --gray-100: #222240;
+  --gray-200: #333355;
+  --gray-300: #444466;
+  --gray-400: #666688;
+  --gray-500: #8888aa;
+  --gray-600: #aaaacc;
+  --gray-700: #ccccee;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 16px 64px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] body {
+  background: linear-gradient(160deg, #0f0e1a 0%, #1a1830 50%, #141225 100%);
+  color: #ddd;
+}
+
+[data-theme="dark"] .setup-card,
+[data-theme="dark"] .quiz-card,
+[data-theme="dark"] .summary-card,
+[data-theme="dark"] .settings-card,
+[data-theme="dark"] .progress-card,
+[data-theme="dark"] .modal-card {
+  background: #1e1e32;
+  color: #ddd;
+}
+
+[data-theme="dark"] .setup-header h1,
+[data-theme="dark"] .settings-header h2,
+[data-theme="dark"] .progress-header h2,
+[data-theme="dark"] .summary-header h2 {
+  color: var(--purple);
+}
+
+[data-theme="dark"] .class-name,
+[data-theme="dark"] .settings-section h3,
+[data-theme="dark"] h3,
+[data-theme="dark"] .confirm-message {
+  color: #ddd;
+}
+
+[data-theme="dark"] .name-input,
+[data-theme="dark"] .class-name-input,
+[data-theme="dark"] .mnemonic-field {
+  background: var(--gray-100);
+  color: #ddd;
+  border-color: var(--gray-300);
+}
+
+[data-theme="dark"] .mc-option {
+  background: var(--gray-100);
+  border-color: var(--gray-300);
+  color: #ddd;
+}
+
+[data-theme="dark"] .mc-option:hover:not([disabled]) {
+  background: var(--purple-ghost);
+  border-color: var(--purple);
+}
+
+[data-theme="dark"] .photo-container {
+  background: linear-gradient(135deg, #1a1830, #222240);
+}
+
+[data-theme="dark"] .toast {
+  background: #444;
+}
+
+[data-theme="dark"] .loading-overlay {
+  background: rgba(15, 14, 26, 0.95);
+}
+
+[data-theme="dark"] .setting-toggle span,
+[data-theme="dark"] .setting-label {
+  color: #ddd;
+}
+
+[data-theme="dark"] .dash-forecast-item,
+[data-theme="dark"] .summary-stat {
+  background: var(--gray-100);
+}
+
 @media (prefers-color-scheme: dark) {
-  /* Placeholder — can be enhanced later */
+  :root:not([data-theme="off"]):not([data-theme]) {
+    /* System dark mode — only if user hasn't explicitly chosen */
+  }
 }

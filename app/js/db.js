@@ -178,4 +178,143 @@ export async function requestPersistentStorage() {
   return false;
 }
 
+// ─── Export / Import Backup ───
+
+/**
+ * Export all app data as a JSON blob (photos as base64).
+ */
+export async function exportAllData() {
+  const classes = await db.classes.toArray();
+  const students = await db.students.toArray();
+  const cards = await db.fsrsCards.toArray();
+  const sessions = await db.sessions.toArray();
+  const settings = await db.settings.toArray();
+
+  // Convert photo/thumbnail blobs to base64
+  const studentsWithPhotos = await Promise.all(students.map(async s => {
+    const out = { ...s };
+    if (s.photo instanceof Blob) out.photo = await blobToBase64(s.photo);
+    if (s.thumbnail instanceof Blob) out.thumbnail = await blobToBase64(s.thumbnail);
+    return out;
+  }));
+
+  return {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    classes,
+    students: studentsWithPhotos,
+    fsrsCards: cards,
+    sessions,
+    settings,
+  };
+}
+
+/**
+ * Import backup data from a JSON object, replacing all existing data.
+ */
+export async function importBackupData(data) {
+  if (!data || data.version !== 1) throw new Error('Invalid backup format');
+
+  // Convert base64 photos back to Blobs
+  const students = data.students.map(s => {
+    const out = { ...s };
+    if (typeof s.photo === 'string' && s.photo.startsWith('data:')) out.photo = base64ToBlob(s.photo);
+    if (typeof s.thumbnail === 'string' && s.thumbnail.startsWith('data:')) out.thumbnail = base64ToBlob(s.thumbnail);
+    // Restore Date objects
+    return out;
+  });
+
+  // Restore Date objects in cards
+  const cards = data.fsrsCards.map(c => ({
+    ...c,
+    due: c.due ? new Date(c.due) : null,
+    lastReview: c.lastReview ? new Date(c.lastReview) : null,
+  }));
+
+  // Restore Date objects in sessions
+  const sessions = data.sessions.map(s => ({
+    ...s,
+    startedAt: s.startedAt ? new Date(s.startedAt) : null,
+    endedAt: s.endedAt ? new Date(s.endedAt) : null,
+  }));
+
+  // Restore Date objects in classes
+  const classes = data.classes.map(c => ({
+    ...c,
+    createdAt: c.createdAt ? new Date(c.createdAt) : null,
+  }));
+
+  await db.transaction('rw', [db.classes, db.students, db.fsrsCards, db.sessions, db.settings], async () => {
+    await db.classes.clear();
+    await db.students.clear();
+    await db.fsrsCards.clear();
+    await db.sessions.clear();
+    await db.settings.clear();
+
+    if (classes.length) await db.classes.bulkAdd(classes);
+    if (students.length) await db.students.bulkAdd(students);
+    if (cards.length) await db.fsrsCards.bulkAdd(cards);
+    if (sessions.length) await db.sessions.bulkAdd(sessions);
+    if (data.settings.length) await db.settings.bulkAdd(data.settings);
+  });
+}
+
+/**
+ * Export progress data as CSV for a class.
+ */
+export async function exportProgressCSV(classId) {
+  const students = await getStudentsByClass(classId);
+  const cards = await getFSRSCardsByClass(classId);
+  const cardMap = new Map(cards.map(c => [c.studentId, c]));
+
+  const rows = [['Family Name', 'Preferred Name', 'Student ID', 'Phase', 'State', 'Stability', 'Difficulty', 'Reps', 'Lapses', 'Next Review']];
+
+  for (const s of students.sort((a, b) => a.familyName.localeCompare(b.familyName))) {
+    const card = cardMap.get(s.id);
+    rows.push([
+      s.familyName,
+      s.preferredName,
+      s.studentId,
+      card?.currentPhase || 'study',
+      card?.state || 'new',
+      card?.stability?.toFixed(1) || '0',
+      card?.difficulty?.toFixed(2) || '0',
+      String(card?.reps || 0),
+      String(card?.lapses || 0),
+      card?.due ? new Date(card.due).toLocaleDateString() : 'N/A',
+    ]);
+  }
+
+  return rows.map(r => r.map(f => `"${f}"`).join(',')).join('\n');
+}
+
+/**
+ * Get storage usage estimate
+ */
+export async function getStorageEstimate() {
+  if (navigator.storage && navigator.storage.estimate) {
+    const est = await navigator.storage.estimate();
+    return { usage: est.usage || 0, quota: est.quota || 0 };
+  }
+  return null;
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(blob);
+  });
+}
+
+function base64ToBlob(dataUrl) {
+  const [header, data] = dataUrl.split(',');
+  const mime = header.match(/:(.*?);/)[1];
+  const bytes = atob(data);
+  const arr = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+
 export { db };

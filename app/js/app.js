@@ -1,14 +1,13 @@
 // ═══════════════════════════════════
 // App — Main entry point
 // ═══════════════════════════════════
-import { db, getClasses, addClass, deleteClass, getClass, getStudentsByClass, getSetting, setSetting, clearAllData, requestPersistentStorage, updateClass } from './db.js';
+import { db, getClasses, addClass, deleteClass, getClass, getStudentsByClass, getSetting, setSetting, clearAllData, requestPersistentStorage, updateClass, exportAllData, importBackupData, exportProgressCSV, getStorageEstimate, getFSRSCardsByClass } from './db.js';
 import { importFromZip, importFromFolder } from './import.js';
 import { SessionScheduler } from './scheduler.js';
 import { initQuiz, showNextCard, cleanup as cleanupQuiz } from './quiz.js';
 import { getDailyGoal, setDailyGoal, GOAL_LEVELS, checkStreak, getStreakData, recordSessionComplete, buildSessionSummary, checkMilestone } from './stats.js';
 import { showScreen, showLoading, hideLoading, showToast, esc, isMobile, isIOS, confirmDialog, renderProgressRing } from './ui.js';
 import { isSpeechSupported } from './speech.js';
-
 let currentClassId = null;
 let scheduler = null;
 
@@ -37,13 +36,13 @@ async function handleDemoParam() {
     const blob = await response.blob();
     const file = new File([blob], 'demo_students.zip', { type: 'application/zip' });
     const classId = await addClass('Demo Class (BIOL1020)');
-    const count = await importFromZip(file, classId, (msg) => {
+    const result = await importFromZip(file, classId, (msg) => {
       const text = document.getElementById('loadingText');
       if (text) text.textContent = msg;
     });
-    await updateClass(classId, { studentCount: count });
+    await updateClass(classId, { studentCount: result.count });
     hideLoading();
-    showToast(`${count} demo students loaded!`, 'success');
+    showToast(`${result.count} demo students loaded!`, 'success');
     await startStudySession(classId);
   } catch (err) {
     hideLoading();
@@ -52,13 +51,41 @@ async function handleDemoParam() {
   }
 }
 
+// ─── Dark Mode ───
+
+async function initDarkMode() {
+  const saved = await getSetting('darkMode');
+  if (saved === 'on') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else if (saved === 'off') {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  // If null, respect system preference (CSS handles via prefers-color-scheme)
+}
+
 // ─── Initialization ───
 
 async function init() {
   // Register service worker
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/app/sw.js', { scope: '/app/' }).catch(() => {});
+    const reg = await navigator.serviceWorker.register('/app/sw.js', { scope: '/app/' }).catch(() => null);
+
+    // Listen for SW updates
+    if (reg) {
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
+            showUpdateBanner();
+          }
+        });
+      });
+    }
   }
+
+  // Dark mode
+  await initDarkMode();
 
   // Request persistent storage
   await requestPersistentStorage();
@@ -80,6 +107,37 @@ async function init() {
 
   // Listen for session complete
   window.addEventListener('sessionComplete', handleSessionComplete);
+
+  // iOS data loss warning (first import)
+  if (isIOS) {
+    const warned = await getSetting('iosWarningShown');
+    if (!warned) {
+      await setSetting('iosWarningShown', true);
+      const isPWA = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+      if (!isPWA) {
+        setTimeout(() => {
+          showToast('Tip: Install this app to your Home Screen to prevent iOS from deleting your data', 'info', 6000);
+        }, 2000);
+      }
+    }
+  }
+}
+
+// ─── SW Update Banner ───
+
+function showUpdateBanner() {
+  const existing = document.getElementById('updateBanner');
+  if (existing) return;
+
+  const banner = document.createElement('div');
+  banner.id = 'updateBanner';
+  banner.className = 'update-banner';
+  banner.innerHTML = `
+    <span>A new version is available</span>
+    <button onclick="location.reload()">Refresh</button>
+    <button class="dismiss" onclick="this.parentElement.remove()">Dismiss</button>
+  `;
+  document.body.appendChild(banner);
 }
 
 // ─── Routing ───
@@ -98,6 +156,7 @@ function route() {
     '#/progress': 'progress',
     '#/settings': 'settings',
     '#/summary': 'summary',
+    '#/dashboard': 'dashboard',
   };
   const screen = routes[hash];
   if (screen) {
@@ -139,8 +198,8 @@ async function renderSetupScreen() {
           <span class="class-count">${c.studentCount || 0} students</span>
         </div>
         <div class="class-actions">
-          <button class="class-study-btn" data-id="${c.id}">Study</button>
-          <button class="class-delete-btn" data-id="${c.id}" title="Delete">
+          <button class="class-study-btn" data-id="${c.id}" aria-label="Study ${esc(c.name)}">Study</button>
+          <button class="class-delete-btn" data-id="${c.id}" title="Delete" aria-label="Delete ${esc(c.name)}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
           </button>
         </div>
@@ -185,7 +244,6 @@ async function renderSetupScreen() {
 function setupImportHandlers() {
   const folderInput = document.getElementById('folderInput');
   const zipInput = document.getElementById('zipInput');
-  const classNameInput = document.getElementById('classNameInput');
 
   // Folder button
   const folderBtn = document.getElementById('folderBtn');
@@ -223,15 +281,15 @@ async function handleImport(type, fileOrList) {
 
   try {
     const classId = await addClass(className);
-    let count;
+    let result;
 
     if (type === 'zip') {
-      count = await importFromZip(fileOrList, classId, (msg) => {
+      result = await importFromZip(fileOrList, classId, (msg) => {
         const text = document.getElementById('loadingText');
         if (text) text.textContent = msg;
       });
     } else {
-      count = await importFromFolder(fileOrList, classId, (msg) => {
+      result = await importFromFolder(fileOrList, classId, (msg) => {
         const text = document.getElementById('loadingText');
         if (text) text.textContent = msg;
       });
@@ -239,9 +297,26 @@ async function handleImport(type, fileOrList) {
 
     hideLoading();
 
+    const count = result.count;
+    const skipped = result.skipped;
+
     if (count > 0) {
       await updateClass(classId, { studentCount: count });
-      showToast(`${count} students imported!`, 'success');
+      let msg = `${count} students imported!`;
+      if (skipped.length > 0) {
+        msg += ` (${skipped.length} file${skipped.length > 1 ? 's' : ''} skipped)`;
+      }
+      showToast(msg, 'success', skipped.length > 0 ? 5000 : 3000);
+
+      // Show skipped files detail if any
+      if (skipped.length > 0) {
+        setTimeout(() => {
+          const names = skipped.slice(0, 5).join(', ');
+          const more = skipped.length > 5 ? ` and ${skipped.length - 5} more` : '';
+          showToast(`Skipped: ${names}${more}. Expected format: LastName, FirstName (ID).jpg`, 'info', 8000);
+        }, 3500);
+      }
+
       await renderSetupScreen();
 
       // Auto-start if this is the only class
@@ -251,12 +326,17 @@ async function handleImport(type, fileOrList) {
       }
     } else {
       await deleteClass(classId);
-      showToast('No valid student photos found. Expected format: "LastName, FirstName (ID).jpg"', 'error', 5000);
+      let errorMsg = 'No valid student photos found. Expected format: "LastName, FirstName (ID).jpg"';
+      if (skipped.length > 0) {
+        const names = skipped.slice(0, 3).join(', ');
+        errorMsg += `\n\nFiles found but not matching: ${names}${skipped.length > 3 ? ` (+${skipped.length - 3} more)` : ''}`;
+      }
+      showToast(errorMsg, 'error', 8000);
     }
   } catch (err) {
     hideLoading();
     console.error('Import error:', err);
-    showToast('Import failed: ' + err.message, 'error');
+    showToast('Import failed: ' + err.message, 'error', 5000);
   }
 }
 
@@ -309,7 +389,6 @@ async function handleSessionComplete(event) {
   const streak = await recordSessionComplete(currentClassId, stats);
 
   // Check milestone
-  // (We'd need prevMastered from before session, approximate with current)
   const milestone = checkMilestone(
     Math.max(0, mastery.actualMastered - stats.newLearned),
     mastery.actualMastered,
@@ -329,7 +408,7 @@ function renderSummaryScreen(summary, troubleSpots, milestone) {
   if (!container) return;
 
   container.innerHTML = `
-    ${milestone ? `<div class="milestone-banner">${esc(milestone)}</div>` : ''}
+    ${milestone ? `<div class="milestone-banner" role="alert">${esc(milestone)}</div>` : ''}
 
     <div class="summary-header">
       <h2>Session Complete</h2>
@@ -356,7 +435,7 @@ function renderSummaryScreen(summary, troubleSpots, milestone) {
     </div>
 
     <div class="summary-mastery">
-      <div class="mastery-bar-large">
+      <div class="mastery-bar-large" role="progressbar" aria-valuenow="${summary.masteryPercentage}" aria-valuemin="0" aria-valuemax="100">
         <div class="mastery-fill-large" style="width: ${summary.masteryPercentage}%"></div>
       </div>
       <p class="mastery-label">${esc(summary.masteryProgress)}</p>
@@ -408,6 +487,12 @@ async function renderSettingsScreen() {
 
   const currentGoal = await getSetting('dailyGoal') || 'regular';
   const reverseMode = await getSetting('reverseMode') || false;
+  const darkMode = await getSetting('darkMode');
+  const classes = await getClasses();
+
+  // Storage estimate
+  const storage = await getStorageEstimate();
+  const storageMB = storage ? (storage.usage / (1024 * 1024)).toFixed(1) : null;
 
   container.innerHTML = `
     <div class="settings-section">
@@ -415,7 +500,7 @@ async function renderSettingsScreen() {
       <p class="settings-desc">How many cards do you want to review each day?</p>
       <div class="goal-picker">
         ${Object.entries(GOAL_LEVELS).map(([key, val]) => `
-          <button class="goal-option ${key === currentGoal ? 'active' : ''}" data-goal="${key}">
+          <button class="goal-option ${key === currentGoal ? 'active' : ''}" data-goal="${key}" aria-label="${val.label}: ${val.reviews} reviews">
             <span class="goal-count">${val.reviews}</span>
             <span class="goal-label">${val.label}</span>
           </button>
@@ -435,9 +520,50 @@ async function renderSettingsScreen() {
     </div>
 
     <div class="settings-section">
+      <h3>Appearance</h3>
+      <div class="setting-row">
+        <label class="setting-toggle">
+          <input type="checkbox" id="darkModeToggle" ${darkMode === 'on' ? 'checked' : ''}>
+          <span>Dark mode</span>
+        </label>
+        <p class="settings-desc">${darkMode ? '' : 'Currently following system preference'}</p>
+      </div>
+    </div>
+
+    <div class="settings-section">
       <h3>Data</h3>
-      <button class="danger-btn" id="clearAllBtn">Clear All Data</button>
-      <p class="settings-desc">Remove all classes, students, and progress from this device</p>
+      ${storageMB ? `<p class="settings-desc">Storage used: ${storageMB} MB</p>` : ''}
+
+      <div class="data-actions">
+        <button class="secondary-btn" id="exportBackupBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          Export Backup
+        </button>
+        <button class="secondary-btn" id="importBackupBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
+          Import Backup
+        </button>
+        <input type="file" id="backupFileInput" accept=".json" class="hidden">
+      </div>
+
+      ${classes.length > 0 ? `
+        <div class="csv-export">
+          <p class="settings-desc" style="margin-top:16px">Export progress as CSV:</p>
+          <div class="csv-class-list">
+            ${classes.map(c => `
+              <button class="csv-export-btn" data-id="${c.id}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                ${esc(c.name)}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+
+      <div style="margin-top: 20px">
+        <button class="danger-btn" id="clearAllBtn">Clear All Data</button>
+        <p class="settings-desc">Remove all classes, students, and progress from this device</p>
+      </div>
     </div>
 
     <div class="settings-section privacy-notice">
@@ -465,6 +591,80 @@ async function renderSettingsScreen() {
     };
   }
 
+  // Dark mode
+  const darkToggle = document.getElementById('darkModeToggle');
+  if (darkToggle) {
+    darkToggle.onchange = async () => {
+      const on = darkToggle.checked;
+      await setSetting('darkMode', on ? 'on' : 'off');
+      if (on) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
+    };
+  }
+
+  // Export backup
+  document.getElementById('exportBackupBtn').onclick = async () => {
+    showLoading('Exporting backup...');
+    try {
+      const data = await exportAllData();
+      const json = JSON.stringify(data);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `learn-my-students-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      hideLoading();
+      showToast('Backup exported!', 'success');
+    } catch (err) {
+      hideLoading();
+      showToast('Export failed: ' + err.message, 'error');
+    }
+  };
+
+  // Import backup
+  const backupInput = document.getElementById('backupFileInput');
+  document.getElementById('importBackupBtn').onclick = () => backupInput.click();
+  backupInput.onchange = async () => {
+    const file = backupInput.files[0];
+    if (!file) return;
+    if (!await confirmDialog('This will replace all existing data with the backup. Continue?')) return;
+    showLoading('Importing backup...');
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      await importBackupData(data);
+      hideLoading();
+      showToast('Backup restored!', 'success');
+      await renderSetupScreen();
+      showScreen('setup');
+    } catch (err) {
+      hideLoading();
+      showToast('Import failed: ' + err.message, 'error');
+    }
+  };
+
+  // CSV export
+  container.querySelectorAll('.csv-export-btn').forEach(btn => {
+    btn.onclick = async () => {
+      const classId = parseInt(btn.dataset.id);
+      const cls = await getClass(classId);
+      const csv = await exportProgressCSV(classId);
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${cls.name.replace(/[^a-z0-9]/gi, '_')}_progress.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('CSV exported!', 'success');
+    };
+  });
+
   // Clear all data
   document.getElementById('clearAllBtn').onclick = async () => {
     if (await confirmDialog('This will permanently delete all classes, students, photos, and your learning progress. Are you sure?')) {
@@ -485,7 +685,6 @@ export async function renderProgressScreen() {
   if (!container) return;
 
   const students = await getStudentsByClass(currentClassId);
-  const { getFSRSCardsByClass } = await import('./db.js');
   const cards = await getFSRSCardsByClass(currentClassId);
   const cardMap = new Map(cards.map(c => [c.studentId, c]));
 
@@ -495,15 +694,16 @@ export async function renderProgressScreen() {
   for (const s of sorted) {
     const card = cardMap.get(s.id);
     let status = 'new';
+    let statusLabel = 'New';
     if (card) {
-      if (card.stability >= 21) status = 'mastered';
-      else if (card.state !== 'new') status = 'learning';
+      if (card.stability >= 21) { status = 'mastered'; statusLabel = 'Mastered'; }
+      else if (card.state !== 'new') { status = 'learning'; statusLabel = 'Learning'; }
     }
 
     const initials = (s.preferredName[0] || '') + (s.familyName[0] || '');
     html += `
-      <div class="progress-item ${status}">
-        ${s.thumbnail ? `<img src="${URL.createObjectURL(s.thumbnail)}" alt="">` : `<div class="pi-initials">${esc(initials.toUpperCase())}</div>`}
+      <div class="progress-item ${status}" role="listitem" aria-label="${esc(s.preferredName)} ${esc(s.familyName)}: ${statusLabel}">
+        ${s.thumbnail ? `<img src="${URL.createObjectURL(s.thumbnail)}" alt="${esc(s.preferredName)} ${esc(s.familyName)}">` : `<div class="pi-initials">${esc(initials.toUpperCase())}</div>`}
         <span>${esc(s.preferredName)} ${esc(s.familyName[0])}.</span>
       </div>
     `;
@@ -511,6 +711,112 @@ export async function renderProgressScreen() {
   html += '</div>';
 
   container.innerHTML = html;
+}
+
+// ─── Dashboard Screen ───
+
+async function renderDashboardScreen(classId) {
+  const container = document.getElementById('dashboardContent');
+  if (!container) return;
+
+  const students = await getStudentsByClass(classId);
+  const cards = await getFSRSCardsByClass(classId);
+  const cls = await getClass(classId);
+
+  // Card state counts
+  let newCount = 0, learning = 0, review = 0, mastered = 0;
+  let totalStability = 0;
+  const upcomingReviews = { today: 0, tomorrow: 0, thisWeek: 0, later: 0 };
+  const now = new Date();
+  const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1);
+  const weekEnd = new Date(now); weekEnd.setDate(weekEnd.getDate() + 7);
+
+  for (const card of cards) {
+    if (card.state === 'new') newCount++;
+    else if (card.stability >= 21) mastered++;
+    else if (card.state === 'learning' || card.state === 'relearning') learning++;
+    else review++;
+
+    totalStability += card.stability || 0;
+
+    const due = new Date(card.due);
+    if (card.state !== 'new') {
+      if (due <= now) upcomingReviews.today++;
+      else if (due <= tomorrow) upcomingReviews.tomorrow++;
+      else if (due <= weekEnd) upcomingReviews.thisWeek++;
+      else upcomingReviews.later++;
+    }
+  }
+
+  const total = students.length;
+  const avgStability = cards.length > 0 ? (totalStability / cards.length).toFixed(1) : 0;
+  const retentionEst = cards.length > 0 ? Math.round((mastered + review * 0.7 + learning * 0.3) / cards.length * 100) : 0;
+
+  container.innerHTML = `
+    <h3>${esc(cls?.name || 'Class')} — Dashboard</h3>
+
+    <div class="dash-section">
+      <h4>Card States</h4>
+      <div class="dash-states">
+        <div class="dash-state-bar">
+          ${mastered > 0 ? `<div class="dash-bar-segment mastered" style="width:${mastered/total*100}%" title="Mastered: ${mastered}"></div>` : ''}
+          ${review > 0 ? `<div class="dash-bar-segment review" style="width:${review/total*100}%" title="Review: ${review}"></div>` : ''}
+          ${learning > 0 ? `<div class="dash-bar-segment learning" style="width:${learning/total*100}%" title="Learning: ${learning}"></div>` : ''}
+          ${newCount > 0 ? `<div class="dash-bar-segment new" style="width:${newCount/total*100}%" title="New: ${newCount}"></div>` : ''}
+        </div>
+        <div class="dash-legend">
+          <span class="dash-legend-item"><span class="dot mastered"></span> Mastered ${mastered}</span>
+          <span class="dash-legend-item"><span class="dot review"></span> Review ${review}</span>
+          <span class="dash-legend-item"><span class="dot learning"></span> Learning ${learning}</span>
+          <span class="dash-legend-item"><span class="dot new"></span> New ${newCount}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-section">
+      <h4>Upcoming Reviews</h4>
+      <div class="dash-forecast">
+        <div class="dash-forecast-item">
+          <span class="dash-forecast-count">${upcomingReviews.today}</span>
+          <span class="dash-forecast-label">Due now</span>
+        </div>
+        <div class="dash-forecast-item">
+          <span class="dash-forecast-count">${upcomingReviews.tomorrow}</span>
+          <span class="dash-forecast-label">Tomorrow</span>
+        </div>
+        <div class="dash-forecast-item">
+          <span class="dash-forecast-count">${upcomingReviews.thisWeek}</span>
+          <span class="dash-forecast-label">This week</span>
+        </div>
+        <div class="dash-forecast-item">
+          <span class="dash-forecast-count">${upcomingReviews.later}</span>
+          <span class="dash-forecast-label">Later</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-section">
+      <h4>Stats</h4>
+      <div class="summary-stats-grid">
+        <div class="summary-stat">
+          <div class="summary-stat-value">${total}</div>
+          <div class="summary-stat-label">Total Students</div>
+        </div>
+        <div class="summary-stat">
+          <div class="summary-stat-value">${retentionEst}%</div>
+          <div class="summary-stat-label">Est. Retention</div>
+        </div>
+        <div class="summary-stat">
+          <div class="summary-stat-value">${avgStability}</div>
+          <div class="summary-stat-label">Avg. Stability</div>
+        </div>
+        <div class="summary-stat">
+          <div class="summary-stat-value">${Math.round(mastered/total*100) || 0}%</div>
+          <div class="summary-stat-label">Mastered</div>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 // ─── Mobile Handlers ───
@@ -538,11 +844,20 @@ document.addEventListener('click', async (e) => {
   if (!currentScreen) return;
 
   const id = currentScreen.id;
-  if (id === 'quizScreen' || id === 'settingsScreen' || id === 'progressScreen' || id === 'summaryScreen') {
+  if (id === 'quizScreen' || id === 'settingsScreen' || id === 'progressScreen' || id === 'summaryScreen' || id === 'dashboardScreen') {
     cleanupQuiz();
     await renderSetupScreen();
     showScreen('setup');
   }
+});
+
+// ─── Dashboard link from progress ───
+
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.dashboard-link');
+  if (!btn || !currentClassId) return;
+  await renderDashboardScreen(currentClassId);
+  showScreen('dashboard');
 });
 
 // ─── Start ───
