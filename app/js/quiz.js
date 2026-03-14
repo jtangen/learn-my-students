@@ -544,8 +544,9 @@ function handleKeyboard(e) {
     }
   }
 
-  // Start typing during answer phase → advance to next card
-  if (isAnswerPhase && e.key.length === 1 && e.key !== ' ' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+  // Start typing during answer phase → advance to next card (but not if focused on an input/textarea)
+  const tag = document.activeElement?.tagName;
+  if (isAnswerPhase && e.key.length === 1 && e.key !== ' ' && !e.ctrlKey && !e.metaKey && !e.altKey && tag !== 'INPUT' && tag !== 'TEXTAREA') {
     showNextCard();
     // Inject the typed character
     setTimeout(() => {
