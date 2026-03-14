@@ -420,47 +420,62 @@ code {
 /* ─── Why Names Matter ─── */
 
 .why-section {
-  padding: 64px 24px;
+  padding: 80px 24px;
   background: #fff;
-  border-top: 1px solid rgba(81, 36, 122, 0.06);
+}
+
+.why-section .section-title {
+  margin-bottom: 48px;
 }
 
 .why-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
+  gap: 24px;
   max-width: 960px;
   margin: 0 auto;
-  text-align: center;
 }
 
 .why-stat {
-  transition: transform 0.2s ease;
+  text-align: center;
+  background: var(--purple-ghost);
+  border-radius: var(--radius);
+  padding: 32px 24px;
+  border: 1px solid rgba(81, 36, 122, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .why-stat:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
 }
 
 .why-number {
-  font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+  font-size: clamp(2rem, 4vw, 2.75rem);
   font-weight: 800;
   color: var(--purple);
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   letter-spacing: -0.02em;
+  line-height: 1;
 }
 
 .why-stat p {
   color: #555;
   font-size: 0.9rem;
   line-height: 1.6;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.why-stat em {
+  color: var(--purple);
+  font-style: italic;
 }
 
 .why-stat cite {
   font-style: normal;
   font-size: 0.75rem;
-  color: #999;
+  color: #aaa;
+  letter-spacing: 0.01em;
 }
 
 /* ─── How It Works ─── */
@@ -961,7 +976,7 @@ code {
 
   .why-stats {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 16px;
     max-width: 400px;
     margin: 0 auto;
   }
@@ -1035,7 +1050,11 @@ code {
   }
 
   .why-section {
-    padding: 48px 16px;
+    padding: 56px 16px;
+  }
+
+  .why-stat {
+    padding: 24px 20px;
   }
 
   .how-it-works,
