@@ -106,6 +106,7 @@ code {
   background: var(--purple);
   color: #fff;
   transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(81, 36, 122, 0.3);
 }
 
 .btn-white {
@@ -116,7 +117,7 @@ code {
 .btn-white:hover {
   background: var(--purple-pale);
   transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 20px rgba(81, 36, 122, 0.2);
 }
 
 .btn-outline-white {
@@ -129,6 +130,24 @@ code {
   background: rgba(255, 255, 255, 0.15);
   border-color: #fff;
   transform: translateY(-1px);
+}
+
+/* ─── Focus States (Accessibility) ─── */
+.btn:focus-visible,
+.nav-brand:focus-visible,
+.nav-link:focus-visible,
+.demo-student:focus-visible,
+.guide-step a:focus-visible,
+.guide-note a:focus-visible {
+  outline: 3px solid var(--purple);
+  outline-offset: 2px;
+}
+
+.btn-white:focus-visible,
+.btn-outline-white:focus-visible,
+.footer-links a:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
 }
 
 /* ─── Nav ─── */
@@ -162,7 +181,10 @@ code {
   color: var(--purple-dark);
   font-weight: 700;
   font-size: 1.05rem;
+  transition: opacity 0.2s;
 }
+
+.nav-brand:hover { opacity: 0.8; }
 
 .nav-icon {
   width: 32px;
@@ -415,7 +437,10 @@ code {
 .step {
   text-align: center;
   position: relative;
+  transition: transform 0.2s ease;
 }
+
+.step:hover { transform: translateY(-4px); }
 
 .step-number {
   width: 36px;
@@ -476,7 +501,7 @@ code {
 }
 
 .bento-wide {
-  grid-column: span 1;
+  grid-column: span 2;
 }
 
 .bento-icon {
@@ -515,6 +540,7 @@ code {
   overflow: hidden;
   box-shadow: var(--shadow);
   transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
 }
 
 .demo-student:hover {
@@ -833,15 +859,18 @@ code {
 }
 
 /* Stagger animation for grid children */
+.steps .step.animate-in:nth-child(1) { transition-delay: 0s; }
 .steps .step.animate-in:nth-child(2) { transition-delay: 0.1s; }
 .steps .step.animate-in:nth-child(3) { transition-delay: 0.2s; }
 
+.bento-grid .bento-card.animate-in:nth-child(1) { transition-delay: 0s; }
 .bento-grid .bento-card.animate-in:nth-child(2) { transition-delay: 0.05s; }
 .bento-grid .bento-card.animate-in:nth-child(3) { transition-delay: 0.1s; }
 .bento-grid .bento-card.animate-in:nth-child(4) { transition-delay: 0.15s; }
 .bento-grid .bento-card.animate-in:nth-child(5) { transition-delay: 0.2s; }
 .bento-grid .bento-card.animate-in:nth-child(6) { transition-delay: 0.25s; }
 
+.demo-grid .demo-student.animate-in:nth-child(1) { transition-delay: 0s; }
 .demo-grid .demo-student.animate-in:nth-child(2) { transition-delay: 0.05s; }
 .demo-grid .demo-student.animate-in:nth-child(3) { transition-delay: 0.1s; }
 .demo-grid .demo-student.animate-in:nth-child(4) { transition-delay: 0.15s; }
@@ -850,6 +879,7 @@ code {
 .demo-grid .demo-student.animate-in:nth-child(7) { transition-delay: 0.3s; }
 .demo-grid .demo-student.animate-in:nth-child(8) { transition-delay: 0.35s; }
 
+.science-grid .science-card.animate-in:nth-child(1) { transition-delay: 0s; }
 .science-grid .science-card.animate-in:nth-child(2) { transition-delay: 0.1s; }
 .science-grid .science-card.animate-in:nth-child(3) { transition-delay: 0.15s; }
 .science-grid .science-card.animate-in:nth-child(4) { transition-delay: 0.2s; }
@@ -928,6 +958,10 @@ code {
 
   .bento-grid {
     grid-template-columns: 1fr;
+  }
+
+  .bento-wide {
+    grid-column: span 1;
   }
 
   .demo-grid {

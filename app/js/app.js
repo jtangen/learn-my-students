@@ -825,13 +825,6 @@ function setupMobileHandlers() {
   document.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
   document.addEventListener('gesturechange', e => e.preventDefault(), { passive: false });
   document.addEventListener('gestureend', e => e.preventDefault(), { passive: false });
-
-  let lastTap = 0;
-  document.addEventListener('touchend', e => {
-    const now = Date.now();
-    if (now - lastTap < 300) e.preventDefault();
-    lastTap = now;
-  }, { passive: false });
 }
 
 // ─── Back Button Handling ───
