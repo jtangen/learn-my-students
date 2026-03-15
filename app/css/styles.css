@@ -265,6 +265,7 @@ html { height: -webkit-fill-available; }
   color: var(--gray-500);
   transition: var(--transition);
   display: flex;
+  text-decoration: none;
 }
 
 .icon-btn:hover { color: var(--purple); border-color: var(--purple); }
