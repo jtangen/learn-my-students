@@ -6,7 +6,7 @@ import { importFromZip, importFromFolder } from './import.js';
 import { SessionScheduler } from './scheduler.js';
 import { initQuiz, showNextCard, cleanup as cleanupQuiz } from './quiz.js';
 import { getDailyGoal, setDailyGoal, GOAL_LEVELS, checkStreak, getStreakData, recordSessionComplete, buildSessionSummary, checkMilestone } from './stats.js';
-import { showScreen, showLoading, hideLoading, showToast, esc, isMobile, isIOS, confirmDialog, renderProgressRing } from './ui.js';
+import { showScreen, showLoading, hideLoading, showToast, esc, isMobile, isIOS, confirmDialog, renderProgressRing, nameOf } from './ui.js';
 import { isSpeechSupported } from './speech.js';
 import { initStudents, openStudentsScreen } from './students.js';
 let currentClassId = null;
@@ -480,7 +480,7 @@ function renderSummaryScreen(summary, troubleSpots, milestone) {
         <div class="trouble-list">
           ${troubleSpots.map(t => `
             <div class="trouble-item">
-              <span>${esc(t.student.preferredName)} ${esc(t.student.familyName)}</span>
+              <span>${esc(nameOf(t.student))}</span>
               <span class="trouble-lapses">${t.lapses} miss${t.lapses > 1 ? 'es' : ''}</span>
             </div>
           `).join('')}

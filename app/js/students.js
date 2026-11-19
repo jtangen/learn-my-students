@@ -6,7 +6,7 @@
 import { getClass, getStudentsByClass, getStudent, addStudent, updateStudent, deleteStudent, updateClass } from './db.js';
 import { preparePhoto } from './import.js';
 import { parseCSV, detectColumns, readClassList, compareClassList, mappingIsUsable, numberKey } from './roster.js';
-import { showScreen, showToast, showLoading, hideLoading, esc, isMobile, confirmDialog } from './ui.js';
+import { showScreen, showToast, showLoading, hideLoading, esc, isMobile, confirmDialog, nameOf } from './ui.js';
 
 /** The words the instructor ticks. Stored with the student, with the date. */
 export const CONSENT_WORDING = 'This student has agreed to this photo being taken and kept on this device so I can learn their name.';
@@ -118,7 +118,15 @@ function leaveStudents() {
 // ─── The students screen ───
 
 function fullName(s) {
-  return `${s.preferredName} ${s.familyName}`.trim();
+  return nameOf(s);
+}
+
+/** Small print under a student's name: what the list calls them, and how the name is said */
+function nameNotes(s) {
+  const notes = [];
+  if (s.goesBy && s.goesBy.trim() && s.goesBy.trim().toLowerCase() !== (s.preferredName || '').toLowerCase()) notes.push(`On the list as ${s.preferredName}`);
+  if (s.phoneticGuide) notes.push(`Said: ${s.phoneticGuide}`);
+  return notes.join(' · ');
 }
 
 function formatDate(iso) {
@@ -179,6 +187,7 @@ async function renderStudents() {
                 <div class="student-meta">
                   <span class="student-name">${esc(fullName(s))}</span>
                   ${s.studentId ? `<span class="student-number">${esc(s.studentId)}</span>` : ''}
+                  ${nameNotes(s) ? `<span class="student-number student-notes">${esc(nameNotes(s))}</span>` : ''}
                   ${consent}
                 </div>
                 <div class="student-actions">
@@ -553,6 +562,20 @@ function openForm({ mode, student = null, prefill = null }) {
       <input type="text" id="sfNumber" class="class-name-input" autocomplete="off" inputmode="numeric" spellcheck="false" value="${esc(s.studentId || '')}">
     </div>
 
+    <details class="name-extras" ${s.goesBy || s.phoneticGuide ? 'open' : ''}>
+      <summary>What they go by, and how it's said</summary>
+      <div class="form-field">
+        <label for="sfGoesBy">Goes by <span class="optional">(optional)</span></label>
+        <input type="text" id="sfGoesBy" class="class-name-input" autocomplete="off" autocapitalize="words" spellcheck="false" value="${esc(s.goesBy || '')}">
+        <p class="field-hint">If they use a different first name from the one on the list. Flashcards show this name, and either one counts when you type.</p>
+      </div>
+      <div class="form-field">
+        <label for="sfSaid">How it's said <span class="optional">(optional)</span></label>
+        <input type="text" id="sfSaid" class="class-name-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="For example: SEER-sha" value="${esc(s.phoneticGuide || '')}">
+        <p class="field-hint">Shown with the name, and used by "Hear Name".</p>
+      </div>
+    </details>
+
     <div class="form-field">
       <span class="form-label" id="sfPhotoLabel">Photo</span>
       <div class="photo-frame" id="sfFrame" aria-labelledby="sfPhotoLabel"></div>
@@ -589,7 +612,7 @@ function openForm({ mode, student = null, prefill = null }) {
   document.getElementById('sfCameraCancelBtn').onclick = () => { stopCamera(); renderFrame(); };
   document.getElementById('sfSaveBtn').onclick = saveForm;
   document.getElementById('sfCancelBtn').onclick = closeForm;
-  for (const id of ['sfFirst', 'sfLast', 'sfNumber']) {
+  for (const id of ['sfFirst', 'sfLast', 'sfNumber', 'sfGoesBy', 'sfSaid']) {
     document.getElementById(id).addEventListener('keydown', (e) => {
       if (e.key === 'Enter') { e.preventDefault(); saveForm(); }
     });
@@ -776,6 +799,8 @@ async function saveForm() {
   const preferredName = document.getElementById('sfFirst').value.trim();
   const familyName = document.getElementById('sfLast').value.trim();
   const studentId = document.getElementById('sfNumber').value.replace(/\s+/g, '');
+  const goesBy = document.getElementById('sfGoesBy').value.trim();
+  const phoneticGuide = document.getElementById('sfSaid').value.trim();
   const consent = document.getElementById('sfConsent');
 
   if (!preferredName) return showError("Enter the student's first name.", 'sfFirst');
@@ -806,13 +831,13 @@ async function saveForm() {
   try {
     if (form.mode === 'add') {
       await addStudent(classId, {
-        studentId, familyName, preferredName,
+        studentId, familyName, preferredName, goesBy, phoneticGuide,
         photo: form.photo.photo,
         thumbnail: form.photo.thumbnail,
         photoConsent,
       });
     } else {
-      const fields = { studentId, familyName, preferredName };
+      const fields = { studentId, familyName, preferredName, goesBy, phoneticGuide };
       if (form.photo) {
         fields.photo = form.photo.photo;
         fields.thumbnail = form.photo.thumbnail;

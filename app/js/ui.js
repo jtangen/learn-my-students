@@ -12,6 +12,16 @@ export function esc(str) {
   return d.innerHTML;
 }
 
+/** The first name to show and say: the one the student goes by, if they have one */
+export function firstNameOf(student) {
+  return (student.goesBy || '').trim() || student.preferredName || '';
+}
+
+/** A student's name as it is shown everywhere: "Mia Baker" */
+export function nameOf(student) {
+  return `${firstNameOf(student)} ${student.familyName || ''}`.trim();
+}
+
 /** Switch to a screen by name (e.g. 'setup', 'quiz', 'progress', 'settings', 'summary') */
 export function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));

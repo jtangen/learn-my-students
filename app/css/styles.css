@@ -1822,6 +1822,15 @@ html { height: -webkit-fill-available; }
 /* Add / edit form */
 .form-field { margin-bottom: 14px; }
 
+.field-hint { font-size: 12px; color: var(--gray-700); margin-top: 6px; line-height: 1.4; }
+
+.name-extras { margin: 2px 0 16px; }
+.name-extras summary { font-size: 13px; font-weight: 600; color: var(--purple); cursor: pointer; padding: 6px 0; margin-bottom: 8px; }
+
+.study-said { display: block; font-size: 14px; color: var(--gray-700); font-style: italic; }
+.listed-as { font-style: normal; margin-top: -8px; }
+.student-notes { font-style: italic; }
+
 .form-field label,
 .form-label {
   display: block;

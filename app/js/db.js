@@ -92,12 +92,13 @@ export async function addStudent(classId, s) {
       preferredName: s.preferredName,
       photo: s.photo,           // Blob, NOT indexed
       thumbnail: s.thumbnail,   // Blob, NOT indexed
-      phoneticGuide: '',
+      phoneticGuide: s.phoneticGuide || '',
       mnemonic: '',
       major: '',
       hometown: '',
       funFact: '',
       notes: '',
+      goesBy: s.goesBy || '',
       addedByHand: true,
       photoConsent: s.photoConsent   // { agreed, date (ISO string), wording }
     });

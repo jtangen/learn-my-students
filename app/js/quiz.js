@@ -1,7 +1,7 @@
 // ═══════════════════════════════════
 // Quiz UI — All 4 phases + answer feedback
 // ═══════════════════════════════════
-import { esc, createPhotoElement, revokeAllPhotoURLs, animateCard, showToast } from './ui.js';
+import { esc, createPhotoElement, revokeAllPhotoURLs, animateCard, showToast, nameOf, firstNameOf } from './ui.js';
 import { matchStudentAnswer } from './matching.js';
 import { pronounceName, isSpeechSupported } from './speech.js';
 import { getRetrievability, Grade } from './fsrs.js';
@@ -109,7 +109,8 @@ function renderStudyPhase() {
   inputArea.innerHTML = `
     <div class="study-phase">
       <div class="study-name-overlay">
-        <span class="study-name">${esc(currentStudent.preferredName)} ${esc(currentStudent.familyName)}</span>
+        <span class="study-name">${esc(nameOf(currentStudent))}</span>
+        ${currentStudent.phoneticGuide ? `<span class="study-said">Said: ${esc(currentStudent.phoneticGuide)}</span>` : ''}
       </div>
       <div class="study-timer-bar"><div class="study-timer-fill" id="studyTimerFill"></div></div>
       <p class="study-hint">Take a moment to learn this face and name</p>
@@ -154,7 +155,7 @@ function renderMultipleChoicePhase() {
     <div class="mc-options">
       ${options.map(s => `
         <button class="mc-option" data-student-id="${s.id}">
-          ${esc(s.preferredName)} ${esc(s.familyName)}
+          ${esc(nameOf(s))}
         </button>
       `).join('')}
     </div>
@@ -194,7 +195,7 @@ function renderHintedRecallPhase() {
 
   displayPhoto(container, currentStudent);
 
-  const firstLetter = currentStudent.preferredName[0];
+  const firstLetter = firstNameOf(currentStudent)[0] || '';
 
   inputArea.innerHTML = `
     <p class="prompt-text">Who is this student?</p>
@@ -246,7 +247,7 @@ function renderReversePhase() {
   // Show name instead of photo
   container.innerHTML = `
     <div class="reverse-name-display">
-      <span class="reverse-name">${esc(currentStudent.preferredName)} ${esc(currentStudent.familyName)}</span>
+      <span class="reverse-name">${esc(nameOf(currentStudent))}</span>
       <p class="reverse-prompt">Which face matches this name?</p>
     </div>
   `;
@@ -355,8 +356,9 @@ async function showAnswerPhase(isCorrect, grade, responseTime, feedbackText) {
 
   inputArea.innerHTML = `
     <div class="feedback show ${feedbackClass}">${esc(fb)}</div>
-    <div class="correct-name show">${esc(currentStudent.preferredName)} ${esc(currentStudent.familyName)}</div>
-    ${currentStudent.phoneticGuide ? `<div class="phonetic-guide">${esc(currentStudent.phoneticGuide)}</div>` : ''}
+    <div class="correct-name show">${esc(nameOf(currentStudent))}</div>
+    ${currentStudent.phoneticGuide ? `<div class="phonetic-guide">Said: ${esc(currentStudent.phoneticGuide)}</div>` : ''}
+    ${currentStudent.goesBy && currentStudent.goesBy.trim().toLowerCase() !== currentStudent.preferredName.toLowerCase() ? `<div class="phonetic-guide listed-as">On the class list as ${esc(currentStudent.preferredName)}</div>` : ''}
     <div class="mnemonic-section">
       <textarea class="mnemonic-field" id="mnemonicField" placeholder="Add a memory trick..." rows="2">${esc(mnemonicValue)}</textarea>
     </div>
@@ -432,7 +434,7 @@ function handlePronunciation() {
   if (btn) btn.disabled = true;
   isPlaying = true;
 
-  const name = `${currentStudent.preferredName} ${currentStudent.familyName}`;
+  const name = nameOf(currentStudent);
 
   // Call synchronously from the tap handler — iOS requires this for speechSynthesis
   pronounceName(name, currentStudent.phoneticGuide)
