@@ -29,7 +29,11 @@ export async function setDailyGoal(level) {
 // ─── Streak System ───
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  // The local calendar day. (The UTC day changes at 10am in Brisbane, which
+  // counted a morning and a late-morning session as two days.)
+  const d = new Date();
+  const two = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`;
 }
 
 function daysBetween(dateStr1, dateStr2) {
