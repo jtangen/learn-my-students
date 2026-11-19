@@ -69,6 +69,9 @@ async function initDarkMode() {
 async function init() {
   // Register service worker
   if ('serviceWorker' in navigator) {
+    // Was an earlier version already running this page? On a first visit there is none,
+    // so the first service worker to arrive is not an "update".
+    const hadWorker = !!navigator.serviceWorker.controller;
     const reg = await navigator.serviceWorker.register('/app/sw.js', { scope: '/app/' }).catch(() => null);
 
     // Listen for SW updates
@@ -77,7 +80,7 @@ async function init() {
         const newWorker = reg.installing;
         if (!newWorker) return;
         newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
+          if (newWorker.state === 'activated' && hadWorker) {
             showUpdateBanner();
           }
         });
