@@ -27,6 +27,7 @@ export function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(name + 'Screen');
   if (el) el.classList.add('active');
+  document.body.dataset.screen = name;   // lets the router tell its own moves from Back, Forward and reloads
   window.location.hash = '#/' + name;
 }
 

@@ -200,12 +200,31 @@ function route() {
     '#/students': 'students',
     '#/studentForm': 'studentForm',
   };
-  const screen = routes[hash];
-  if (screen) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    const el = document.getElementById(screen + 'Screen');
-    if (el) el.classList.add('active');
+  let screen = routes[hash];
+  if (!screen) return;
+
+  // Already there (the app moved itself): nothing to do
+  if (document.body.dataset.screen === screen) return;
+
+  // Arrived by a reload, a typed address, or the browser's Back and Forward buttons.
+  // Every screen but the class list is filled in when the app opens it, so one that
+  // has not been filled in has nothing to show: go to the class list instead.
+  const filledBy = {
+    quiz: 'inputArea', summary: 'summaryContent', settings: 'settingsContent', progress: 'progressContent',
+    dashboard: 'dashboardContent', students: 'studentsContent', studentForm: 'studentFormContent',
+  };
+  if (screen !== 'setup') {
+    const content = document.getElementById(filledBy[screen]);
+    if (!content || content.children.length === 0) {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+      screen = 'setup';
+    }
   }
+
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(screen + 'Screen');
+  if (el) el.classList.add('active');
+  document.body.dataset.screen = screen;
 }
 
 // ─── Setup Screen ───
