@@ -341,6 +341,7 @@ function setupImportHandlers() {
     folderInput.onchange = async () => {
       if (!folderInput.files.length) return;
       await handleImport('folder', folderInput.files);
+      folderInput.value = '';   // so the same folder can be chosen again
     };
   }
 
@@ -349,6 +350,7 @@ function setupImportHandlers() {
     zipInput.onchange = async () => {
       if (!zipInput.files[0]) return;
       await handleImport('zip', zipInput.files[0]);
+      zipInput.value = '';      // so the same file can be chosen again
     };
   }
 }
@@ -358,8 +360,9 @@ async function handleImport(type, fileOrList) {
 
   showLoading('Preparing import...');
 
+  let classId = null;
   try {
-    const classId = await addClass(className);
+    classId = await addClass(className);
     let result;
 
     if (type === 'zip') {
@@ -415,8 +418,24 @@ async function handleImport(type, fileOrList) {
   } catch (err) {
     hideLoading();
     console.error('Import error:', err);
-    showToast('Import failed: ' + err.message, 'error', 5000);
+    // Don't leave a half-made, empty class behind
+    if (classId != null) await deleteClass(classId).catch(() => {});
+    await renderSetupScreen();
+    showToast(importErrorMessage(type, err), 'error', 8000);
   }
+}
+
+/** A failed import, in plain words */
+function importErrorMessage(type, err) {
+  const message = (err && err.message) || '';
+  if (typeof JSZip === 'undefined') {
+    return 'The zip reader did not load. Check your connection, reload the page and try again.';
+  }
+  if (message.startsWith('Storage full')) return message;
+  if (type === 'zip' && /zip|central directory|corrupt|end of data/i.test(message)) {
+    return "That file isn't a zip we can open. Zip the folder of photos (right-click, Compress) and choose the .zip file.";
+  }
+  return 'Import failed: ' + message;
 }
 
 // ─── Study Session ───
