@@ -1331,6 +1331,11 @@ html { height: -webkit-fill-available; }
   .quiz-card { max-width: 440px; }
 }
 
+/* Laptops: keep the whole card, answer box and buttons on screen without scrolling */
+@media (min-width: 901px) {
+  .photo-container { max-height: 52vh; }
+}
+
 @media (max-width: 380px) {
   .stats { gap: 10px; font-size: 12px; }
   .mastery-text { font-size: 10px; }
