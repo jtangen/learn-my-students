@@ -2326,3 +2326,26 @@ html { height: -webkit-fill-available; }
 [data-theme="dark"] .form-error,
 [data-theme="dark"] .mc-option.wrong,
 [data-theme="dark"] .trouble-lapses { color: #ff8a80; }
+
+/* ─── REDUCED MOTION ───
+   When the system asks for less motion: no sliding cards, no animated bars.
+   The loading spinner keeps turning, slowly, because it is the only sign of work in progress.
+   (The four-second study timer still runs; only its moving bar is stilled.) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .loading-spinner {
+    animation-duration: 2.4s !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  .summary-actions .start-btn:hover,
+  .summary-actions .start-btn:active { transform: none; }
+}
