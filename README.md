@@ -14,7 +14,7 @@
 
 ## Why?
 
-Research shows that when instructors use student names, it helps students develop a sense of belonging, makes them feel valued, and increases comfort talking to their instructors and peers ([Cooper et al., 2017](https://doi.org/10.1187/cbe.16-07-0212)). But learning 100+ names each semester is genuinely hard — names are semantically arbitrary (the [Baker-Baker paradox](https://en.wikipedia.org/wiki/Baker%E2%80%93Baker_paradox)), and students within a cohort often look similar.
+Research shows that when instructors use student names, it helps students develop a sense of belonging, makes them feel valued, and increases comfort talking to their instructors and peers ([Cooper et al., 2017](https://doi.org/10.1187/cbe.16-08-0265)). But learning 100+ names each semester is genuinely hard — names are semantically arbitrary (the [Baker-Baker paradox](https://en.wikipedia.org/wiki/Baker%E2%80%93Baker_paradox)), and students within a cohort often look similar.
 
 **Learn My Students** solves this with the same spaced repetition science used by medical students to memorize thousands of facts — adapted specifically for face-name learning.
 
@@ -30,6 +30,9 @@ Research shows that when instructors use student names, it helps students develo
 | **Name Pronunciation** | Hear any name spoken aloud via your browser's built-in Web Speech API. No external services. |
 | **Streaks & Goals** | Configurable daily goals (5/15/30 reviews), streak tracking with freeze days, milestone celebrations. |
 | **Session Summaries** | Accuracy trends, speed improvements, trouble spots — all with growth framing. |
+| **Add a Student by Photo** | Someone missing from the photo download? Add them by hand with your phone's camera, your laptop's camera, or a picture file. Replace a photo or delete a student any time. |
+| **Consent Built In** | A photo you add needs one tick: the student has agreed to it being taken and kept on your device. The tick and the date are stored with the student. |
+| **Find Who Has No Photo** | Load your class list (CSV) and see which students have no photo, each with an "Add photo" button. Copes with different column layouts, and asks when it can't tell. |
 
 ## Quick Start
 
@@ -110,12 +113,15 @@ This app takes student privacy seriously:
 - **No external API calls** — pronunciation uses your browser's built-in speech synthesis
 - **FERPA and Australian Privacy Act compliant** — no student data leaves the browser
 - **End-of-semester cleanup** — clear all data with one click in Settings
+- **Photos you take stay on your device** — camera and picture-file photos are stored in IndexedDB like imported ones, and anything the camera wrote into the file (such as location) is dropped
+- **Consent is recorded** — a photo can only be added by hand after ticking that the student has agreed; the tick and the date are kept with the student
+- **Class lists are read in your browser** — only names and student numbers are kept, on your device, to show who has no photo
 
 ## Tech Stack
 
 Zero-build static site — no Node.js, no bundler, no framework:
 
-- **Vanilla JavaScript** (ES modules) — 2,900 lines across 10 files
+- **Vanilla JavaScript** (ES modules) — 4,100 lines across 12 files
 - **IndexedDB** via [Dexie.js](https://dexie.org/) — photo blob storage with auto-generated thumbnails
 - **FSRS v4.5** — self-implemented spaced repetition (~120 lines of pure functions)
 - **Jaro-Winkler + Double Metaphone** — self-implemented fuzzy matching
@@ -127,7 +133,7 @@ Zero-build static site — no Node.js, no bundler, no framework:
 
 ```
 app/
-├── index.html          # App shell (5 screens)
+├── index.html          # App shell (8 screens)
 ├── manifest.json       # PWA manifest
 ├── sw.js               # Service worker
 ├── css/styles.css      # Design system (UQ purple #51247A)
@@ -139,6 +145,8 @@ app/
 │   ├── quiz.js         # Quiz UI (all 4 phases + reverse mode)
 │   ├── import.js       # ZIP/folder import, thumbnail generation
 │   ├── matching.js     # Fuzzy matching, phonetics, nicknames
+│   ├── roster.js       # Class list (CSV) reading, comparison with photos
+│   ├── students.js     # Add, edit, delete a student; camera; consent
 │   ├── speech.js       # Web Speech API pronunciation
 │   ├── stats.js        # Streaks, goals, session summaries
 │   └── ui.js           # Shared UI helpers

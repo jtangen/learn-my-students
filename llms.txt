@@ -26,7 +26,7 @@ A static web app (no backend, no build step) that helps university instructors l
 ## File Structure
 
 ```
-app/index.html          - App shell (5 screens)
+app/index.html          - App shell (8 screens)
 app/manifest.json       - PWA manifest
 app/sw.js               - Service worker (cache-first)
 app/css/styles.css      - All styles
@@ -37,6 +37,8 @@ app/js/scheduler.js     - Session scheduling, batch intro, 4 difficulty phases
 app/js/quiz.js          - Quiz UI (study, multiple choice, hinted recall, full recall, reverse)
 app/js/import.js        - ZIP/folder import, filename parser, thumbnail generation
 app/js/matching.js      - Jaro-Winkler, Double Metaphone, nickname table, matchName()
+app/js/roster.js        - Class list (CSV) parsing, column detection, comparison with photos (pure functions)
+app/js/students.js      - Students screen: add/edit/delete a student by hand, camera capture, consent, class list UI
 app/js/speech.js        - Web Speech API wrapper
 app/js/stats.js         - Streaks, daily goals, session summaries, milestones
 app/js/ui.js            - Shared UI helpers (showScreen, showToast, etc.)
@@ -50,6 +52,10 @@ Files must be named: `LastName, FirstName (StudentID).jpg`
 Example: `Smith, Jane (12345678).jpg`
 
 The parser is in `app/js/import.js`, function `parseStudentFromName()`.
+
+## Adding Students By Hand
+
+From a class's Students screen an instructor can add one student (first name, last name, optional student number, photo from a phone camera, laptop camera or picture file), replace a photo, or delete a student. Adding a photo requires ticking a consent box; the record stores `photoConsent: { agreed, date, wording }`. A class list (CSV) can be loaded to show which students have no photo; it is stored on the class record as `classList` (names and student numbers only).
 
 ## Running Locally
 
