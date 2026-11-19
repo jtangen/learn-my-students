@@ -371,6 +371,53 @@ export function matchName(input, target) {
 }
 
 /**
+ * Mark a typed answer for a student.
+ *
+ * People answer in different ways: "Mia", "Mia Baker", "Baker, Mia", or the
+ * name the student goes by. Each is judged on the first-name part, against
+ * every first name we hold for the student, and the best result wins.
+ * A family name on its own is not accepted: the card asks who this is.
+ *
+ * @param {string} input - what was typed
+ * @param {{ preferredName: string, familyName: string, goesBy?: string }} student
+ * @returns the same shape as matchName()
+ */
+export function matchStudentAnswer(input, student) {
+  const clean = v => String(v || '').toLowerCase().replace(/[,.]/g, ' ').replace(/\s+/g, ' ').trim();
+  const typed = clean(input);
+  const family = clean(student.familyName);
+
+  // First names we accept: the one they go by, the listed one, and the first word of each
+  const targets = [];
+  for (const name of [student.goesBy, student.preferredName]) {
+    const full = String(name || '').trim();
+    if (!full) continue;
+    for (const candidate of [full, full.split(/\s+/)[0]]) {
+      if (!targets.some(t => t.toLowerCase() === candidate.toLowerCase())) targets.push(candidate);
+    }
+  }
+  if (!typed || targets.length === 0) return matchName(input, student.preferredName);
+
+  // What was typed, and what was typed with the family name taken off either end
+  const attempts = [typed];
+  const words = typed.split(' ');
+  const familyWords = family ? family.split(' ').length : 0;
+  if (familyWords > 0 && words.length > familyWords) {
+    if (jaroWinkler(words.slice(-familyWords).join(' '), family) >= 0.88) attempts.push(words.slice(0, -familyWords).join(' '));
+    if (jaroWinkler(words.slice(0, familyWords).join(' '), family) >= 0.88) attempts.push(words.slice(familyWords).join(' '));
+  }
+
+  let best = null;
+  for (const attempt of attempts) {
+    for (const target of targets) {
+      const result = matchName(attempt, target);
+      if (!best || result.grade > best.grade || (result.grade === best.grade && result.score > best.score)) best = result;
+    }
+  }
+  return best;
+}
+
+/**
  * Match input against both preferred name and family name,
  * returning the best match.
  */

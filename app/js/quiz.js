@@ -2,7 +2,7 @@
 // Quiz UI — All 4 phases + answer feedback
 // ═══════════════════════════════════
 import { esc, createPhotoElement, revokeAllPhotoURLs, animateCard, showToast } from './ui.js';
-import { matchName } from './matching.js';
+import { matchStudentAnswer } from './matching.js';
 import { pronounceName, isSpeechSupported } from './speech.js';
 import { getRetrievability, Grade } from './fsrs.js';
 import { Phase } from './scheduler.js';
@@ -308,7 +308,7 @@ function handleTypedAnswer(isHinted) {
   if (!value) return;
 
   const responseTime = Date.now() - questionStartTime;
-  const result = matchName(value, currentStudent.preferredName);
+  const result = matchStudentAnswer(value, currentStudent);
 
   // Style the input
   const isCorrect = result.grade >= Grade.GOOD;
