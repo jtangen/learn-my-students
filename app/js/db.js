@@ -77,6 +77,49 @@ export async function updateStudent(id, fields) {
   return db.students.update(id, fields);
 }
 
+/**
+ * Add one student by hand (photo taken or chosen by the instructor).
+ * Stored in the same shape as imported students, plus a record of the
+ * student's consent, and given a new card so they join the study queue.
+ * @returns {number} the new student's id
+ */
+export async function addStudent(classId, s) {
+  return db.transaction('rw', [db.students, db.classes, db.fsrsCards], async () => {
+    const id = await db.students.add({
+      classId,
+      studentId: s.studentId || '',
+      familyName: s.familyName,
+      preferredName: s.preferredName,
+      photo: s.photo,           // Blob, NOT indexed
+      thumbnail: s.thumbnail,   // Blob, NOT indexed
+      phoneticGuide: '',
+      mnemonic: '',
+      major: '',
+      hometown: '',
+      funFact: '',
+      notes: '',
+      addedByHand: true,
+      photoConsent: s.photoConsent   // { agreed, date (ISO string), wording }
+    });
+    await initFSRSCards(classId, [{ id }]);
+    await db.classes.update(classId, { studentCount: await db.students.where('classId').equals(classId).count() });
+    return id;
+  });
+}
+
+/**
+ * Delete one student, their photo and their card.
+ */
+export async function deleteStudent(id) {
+  await db.transaction('rw', [db.students, db.classes, db.fsrsCards], async () => {
+    const student = await db.students.get(id);
+    if (!student) return;
+    await db.fsrsCards.where('studentId').equals(id).delete();
+    await db.students.delete(id);
+    await db.classes.update(student.classId, { studentCount: await db.students.where('classId').equals(student.classId).count() });
+  });
+}
+
 // ─── FSRS Cards ───
 export async function saveFSRSCard(cardData) {
   if (cardData.id) {

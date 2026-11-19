@@ -96,6 +96,50 @@ async function generateThumbnail(blob, maxSize = 200) {
 }
 
 /**
+ * Prepare one photo added by hand (camera or picture file) the way imported
+ * photos are: fitted within MAX_PHOTO_SIZE, with a thumbnail.
+ * Always re-drawn as a JPEG, which also drops anything the camera wrote into
+ * the file (such as where the photo was taken).
+ * Throws if the picture can't be read.
+ * @returns {{ photo: Blob, thumbnail: Blob }}
+ */
+export async function preparePhoto(blob, maxSize = MAX_PHOTO_SIZE) {
+  const photo = await new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(blob);
+    img.onload = () => {
+      if (!img.width || !img.height) {
+        URL.revokeObjectURL(url);
+        reject(new Error('Could not read that picture'));
+        return;
+      }
+      const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(img.width * scale));
+      canvas.height = Math.max(1, Math.round(img.height * scale));
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((out) => {
+        URL.revokeObjectURL(url);
+        if (out) resolve(out);
+        else reject(new Error('Could not read that picture'));
+      }, 'image/jpeg', 0.85);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Could not read that picture'));
+    };
+    img.src = url;
+  });
+
+  const thumbnail = await generateThumbnail(photo);
+  if (!thumbnail) throw new Error('Could not read that picture');
+  return { photo, thumbnail };
+}
+
+/**
  * Import students from a ZIP file.
  * @param {File} file - the ZIP file
  * @param {number} classId - the class to import into
