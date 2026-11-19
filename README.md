@@ -30,6 +30,9 @@ Research shows that when instructors use student names, it helps students develo
 | **Name Pronunciation** | Hear any name spoken aloud via your browser's built-in Web Speech API. No external services. |
 | **Streaks & Goals** | Configurable daily goals (5/15/30 reviews), streak tracking with freeze days, milestone celebrations. |
 | **Session Summaries** | Accuracy trends, speed improvements, trouble spots — all with growth framing. |
+| **Five Before Class** | A short session: five students, each taken from a first look to typing the name from memory, in a few minutes. |
+| **Class Overview** | See who you know well, who is shaky and who is new. Search by name or number, filter, or switch to a faces view to find someone fast. |
+| **Names Done Properly** | Record the name a student goes by and how it's said. Both show wherever the name does, and typed answers accept either name, with or without the family name. |
 | **Add a Student by Photo** | Someone missing from the photo download? Add them by hand with your phone's camera, your laptop's camera, or a picture file. Replace a photo or delete a student any time. |
 | **Consent Built In** | A photo you add needs one tick: the student has agreed to it being taken and kept on your device. The tick and the date are stored with the student. |
 | **Find Who Has No Photo** | Load your class list (CSV) and see which students have no photo, each with an "Add photo" button. Copes with different column layouts, and asks when it can't tell. |
@@ -113,6 +116,7 @@ This app takes student privacy seriously:
 - **No external API calls** — pronunciation uses your browser's built-in speech synthesis
 - **FERPA and Australian Privacy Act compliant** — no student data leaves the browser
 - **End-of-semester cleanup** — clear all data with one click in Settings
+- **Backups are a file you keep** — export one in Settings to move your classes to another device; it never passes through a server
 - **Photos you take stay on your device** — camera and picture-file photos are stored in IndexedDB like imported ones, and anything the camera wrote into the file (such as location) is dropped
 - **Consent is recorded** — a photo can only be added by hand after ticking that the student has agreed; the tick and the date are kept with the student
 - **Class lists are read in your browser** — only names and student numbers are kept, on your device, to show who has no photo
@@ -121,7 +125,7 @@ This app takes student privacy seriously:
 
 Zero-build static site — no Node.js, no bundler, no framework:
 
-- **Vanilla JavaScript** (ES modules) — 4,100 lines across 12 files
+- **Vanilla JavaScript** (ES modules) — 4,500 lines across 12 files
 - **IndexedDB** via [Dexie.js](https://dexie.org/) — photo blob storage with auto-generated thumbnails
 - **FSRS v4.5** — self-implemented spaced repetition (~120 lines of pure functions)
 - **Jaro-Winkler + Double Metaphone** — self-implemented fuzzy matching
@@ -146,7 +150,7 @@ app/
 │   ├── import.js       # ZIP/folder import, thumbnail generation
 │   ├── matching.js     # Fuzzy matching, phonetics, nicknames
 │   ├── roster.js       # Class list (CSV) reading, comparison with photos
-│   ├── students.js     # Add, edit, delete a student; camera; consent
+│   ├── students.js     # Class overview; add, edit, delete a student; camera; consent
 │   ├── speech.js       # Web Speech API pronunciation
 │   ├── stats.js        # Streaks, goals, session summaries
 │   └── ui.js           # Shared UI helpers

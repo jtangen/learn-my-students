@@ -38,7 +38,7 @@ app/js/quiz.js          - Quiz UI (study, multiple choice, hinted recall, full r
 app/js/import.js        - ZIP/folder import, filename parser, thumbnail generation
 app/js/matching.js      - Jaro-Winkler, Double Metaphone, nickname table, matchName()
 app/js/roster.js        - Class list (CSV) parsing, column detection, comparison with photos (pure functions)
-app/js/students.js      - Students screen: add/edit/delete a student by hand, camera capture, consent, class list UI
+app/js/students.js      - Students screen: class overview (status, search, filters, faces), add/edit/delete a student by hand, camera capture, consent, class list UI
 app/js/speech.js        - Web Speech API wrapper
 app/js/stats.js         - Streaks, daily goals, session summaries, milestones
 app/js/ui.js            - Shared UI helpers (showScreen, showToast, etc.)
@@ -83,4 +83,7 @@ All student data stays in the browser's IndexedDB. No server calls, no analytics
 - Fuzzy matching thresholds: Jaro-Winkler ≥0.92 correct, 0.85-0.92 almost, Double Metaphone for phonetic
 - Batch intro: 6 new students per session, ~75% review / 25% new interleaving
 - Daily goals: casual (5), regular (15), intense (30) reviews
-- Streaks: minimum 5 reviews to count, 2 freeze days, replenish every 7 days
+- Streaks: minimum 5 reviews to count, 2 freeze days, replenish every 7 days, counted by the local calendar day
+- Five before class: `new SessionScheduler(classId, goal, { quick: 5 })` picks five students (shaky, then new, then least known) and takes each through all four phases in one sitting
+- Class overview: `cardStatus(card)` in `app/js/scheduler.js` returns new / learning / shaky / known (known = stability of 21 days or more)
+- Typed answers: `matchStudentAnswer(input, student)` in `app/js/matching.js` accepts the first name, the name they go by (`goesBy`), or the full name in either order
