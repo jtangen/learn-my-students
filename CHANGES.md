@@ -120,5 +120,115 @@ These are picked up in phase 2.
 - **HEIC pictures.** An iPhone photo sent to a Mac is often HEIC, which Chrome cannot open. The form says so in plain words. That message, and Safari opening HEIC, were not tested with a real HEIC file.
 - **A real laptop camera and a real permission prompt.** Tested with Chrome's fake camera and with the camera blocked by setting.
 - **A real class list from the university.** I do not know its exact columns and did not look. The six made-up layouts are my guess at the range.
-- **A real class of 150.** The largest class tested was the demo's 20 (plus additions).
+- **A real class of 150.** The largest class tested in phase 1 was the demo's 20 (plus additions). Phase 2 tested a made-up class of 160: see below.
 - **Screen readers.** Buttons and fields are labelled, but nothing was run with VoiceOver.
+
+---
+
+# Phase 2: a better experience, in function and design
+
+The reasons are in `AUDIT.md`: each change below answers a numbered finding there. One improvement per commit. Before and after screenshots are beside the phase 1 screenshots, named `p2_NN_..._before.png` and `p2_NN_..._after.png` (NN is the audit number); the walk-through screenshots the audit was written from are in `audit_before/`.
+
+## The one thing that must not go wrong: data already in people's browsers
+
+**Nothing about how data is stored was restructured.** No new store, no new index, no database version change. Phase 2 adds one optional field to a student (`goesBy`), starts using one that every record already had (`phoneticGuide`), and adds one setting (`lastBackupAt`). Old records simply do not have the new field and are read as "none". Because the database version is unchanged, the old app can still open the data after the new one has used it, so a roll-back is safe too. I chose this over a version upgrade on purpose: a version bump would lock the old app out for no benefit.
+
+**The upgrade test** (`t6_upgrade.py`, run against the finished branch):
+
+1. The app exactly as it is on `main` (a copy made with `git archive`, served with the same caching headers as the live site) in a fresh browser profile. Demo class plus a second class: 23 students. Sessions on day 0 (twice), day 1, day 4 and day 9 (the page's clock moved forward), one wrong answer, a memory trick typed in, daily goal changed, reverse mode on, dark mode on. That left 2 classes, 23 students with photos, 23 cards (20 reviewed, at typed recall, one lapsed), 5 sessions and 4 settings.
+2. Same profile, same address, now serving this branch. The first load shows the old cached app and the "A new version is available" banner; I pressed Refresh, as a user would.
+3. Compared every record of every store with what `main` left, photos as SHA-256 of their bytes: **classes, students, cards, sessions and settings all identical.** Dark mode was still on. The Students screen showed all 20 old students with photos. A study session three days later ran from the old history; afterwards no student or photo had changed, the five old sessions were untouched with one added, and no card had lost a review.
+4. Served `main` again to the same profile (a roll-back): the old app opened the data, identical, and started a session.
+
+Result: **22 of 22 checks passed**, on the phase 1 commit and again on the finished branch.
+
+## What changed, most valuable first
+
+| Audit | Change | How it was tested |
+|---|---|---|
+| 1 | **The study card's timer stops when you leave.** It used to keep running, so students were marked as seen while you were on another screen. | Before: 0 cards seen, leave on a study card, 9.5 seconds later 2 marked as seen. After: 0. A new session's first card stays up its own four seconds and still moves on by itself. |
+| 2 | **A typed full name is accepted**, in either order ("Mia Baker", "Baker, Mia"). A family name alone still is not. | In a real session, day 4: full name and "Last, First" marked Correct; family name alone not. 21 typed answers also checked directly against the marking function. |
+| 20 | **Nicknames and short forms count** (see the note below this table). | 40 unit checks; in a real session "Nik", "Soph", "Lachie", "Liv" and "Charlie" for the demo students. |
+| 3 | **The flashcard fits a laptop screen.** | At 1440 by 780 the Next button was 161 pixels below the fold; now it is on screen with 38 to spare. Also checked at 1280 by 900. |
+| 4 | **The Students screen is the class overview**: Know well, Learning, Shaky or New for each student (from their card), counts that filter the list, search by name or number, and a **Faces** view of larger photos to scan when someone is in front of you. Each class row on the first screen says what is waiting ("4 due · 6 new" or "all caught up"). The class-list section moved under the list, with a one-line summary and jump link at the top. | After a fortnight of simulated use and one miss: counts match the cards; filter, name search, number search, "No students match", faces grid (four across on a laptop, three on a phone, no sideways scroll). |
+| 5 | **Five before class.** A button under each class: five students (anyone shaky first, then new, then least known), each taken from seeing the name, to picking it from four, to typing it with a first-letter hint, to typing it unaided. The summary says "Ready for class" and shows the five. A near miss comes back for another go. | Five students, each in that order; the other 15 untouched; cards scheduled; repeats in one sitting do not raise a card's stability; the ordinary Study session unchanged; a class of three says "A few before class". |
+| 6 | **A first visit says what the app is**, offers "Try it with a demo class", and has a fold-out "Where do I get my students' photos?" (the UQ steps from the README). The two icon buttons now say About and Settings. | Demo loads 20 students from the app's own address and nothing else; the box goes once there is a class; phone width. |
+| 7 | **No "new version" banner on a first visit.** | First visit: none. A real update (the upgrade test) still shows it. |
+| 8 | **Goes by, and how it's said.** Two optional fields on the student form. The name they go by shows on flashcards and lists and either first name counts when typed; how it's said shows with the name and is what "Hear Name" speaks. | Set on an imported student without a consent tick; study card, multiple choice, hint letter and answer all use it; "Mia" and "Mimi Baker" both accepted for a student listed as Mia who goes by Mimi. |
+| 9 | **Grey text is readable.** | Measured contrast of 18 pieces of small text: lowest was 1.5 to 1, now 4.6 to 1 in light and 5.3 to 1 in dark (the minimum is 4.5). |
+| 10 | **Reduced motion is honoured.** | With the setting on: card slide and bar animations off, spinner still turning, study card still advances. With it off: unchanged. |
+| 11 | **The confirm box is a proper dialog** (role, focus on Cancel, Tab stays inside, Escape cancels, focus returns), its red button says what it does (Delete, Replace, Remove), and toasts are announced to screen readers. | Keyboard only: opened, tabbed, escaped, then deleted a class without touching the mouse. |
+| 12 | **Buttons are big enough to tap.** | On a 390-pixel phone, 21 buttons and tick boxes measured: all at least 44 by 44 (Back was 30 tall, the bin 30 by 30, tick boxes 13). |
+| 13 | **Dark mode follows the device until you choose.** If your device is in dark mode and you never touched the setting, the app will now be dark; that is what Settings always said it did. | Device dark, no choice: dark. Device switches: app follows. Light chosen in the app: stays light after a reload. |
+| 14 | **A failed import leaves nothing behind** and says what to do in plain words. The same file can be chosen again. | A non-zip: plain message, no web address, no empty class; a good zip imports afterwards. |
+| 15 | **Streak days are local days.** | Brisbane time zone, 8am and 11am the same day: one day (was two, the first dated the day before). 9am next morning: two. |
+| 16 | **A session left part-way is recorded.** | Five answers then Back: one session of 5, streak 1 (was no session). Leaving without answering records nothing; a finished session is recorded once. |
+| 17 | **A reload on an inner screen goes to the class list**, not an empty card. | Reload on Settings, summary, a session, Students, dashboard: class list each time. Settings still opens six times in a row; Back and Forward work. |
+| 18 | **Settings explains the backup and says when you last saved one.** | Round trip below. |
+| 19 | **The app page has a tab icon**, so nothing asks for a missing file. | No missing-file errors online or with the network off. |
+
+Also fixed on the way: the backup file was named for the UTC day, and a toast sat on top of the bottom button on a phone and swallowed taps.
+
+### Nicknames: I fixed the matching, and made the README say exactly what it does
+
+The README promised "50+ nickname mappings" and "credit for close answers". Running the app's own `matching.js` showed:
+
+- The table was there (52 names), but **no nickname ever counted as correct**. One in the table got "That's a nickname! Full name: Elizabeth" and was scored as a miss. Most never reached that check: "Kate" for Katherine, "Tom" for Thomas, "Alex" for Alexander, "Ben", "Sam" and "Steve" were caught earlier by the similarity test and got "Almost!".
+- Short forms were a lottery. "Soph" for Sophie passed (as a "small typo"); "Nik" for Nikhil and "Lach" for Lachlan were misses.
+
+I fixed the matching rather than trimming the README, for three reasons: the table was plainly meant to earn credit; the old behaviour was arbitrary from the lecturer's side; and the feedback can do the teaching, because an accepted nickname now reads **"Correct! On the list as "Nikhil""**, so the full name is in front of you every time. If a student really goes by Nik, the new "Goes by" field is the proper place for it.
+
+What counts as correct now: the name; a small typo; a nickname from the table, in either direction ("Liz" for Elizabeth, "William" for Bill); and a short form made from the front of the name (at least three letters and at least half the name: "Nik" for Nikhil, not "Ni", and not "Mar" for Margaret). I added 26 common names to the table (Lachlan, Olivia, Charlotte, Nikhil, Oliver and so on): it is now 78 names and 183 nicknames. A sound-alike ("Mai" for Mia) or a near miss is still "almost": not counted as correct, but not treated as forgotten. The README row and `llms.txt` now say this.
+
+Tests: every one of the 183 nicknames is checked in both directions, plus the cases from the report, short forms for names not in the table, and 13 answers that must still be wrong ("Owen" for Nikhil, "Bob" for Rob, "Emma" for Emily): 40 of 40. In a real session on day 4, I typed "Nik", "Soph", "Lachie", "Liv" and "Charlie" for the five demo students with an obvious short form, and each was marked "Correct! On the list as ..." and counted (in the phase 1 version "Lachie" got "Close! It's Lachlan" and was a miss).
+
+One limit: with an Alex and an Alexander in the same class, "Alex" typed at Alexander's photo counts. The app cannot know which you meant.
+
+### Looking after the data: the backup round trip
+
+In a class with a student added by hand (consent recorded), a "goes by" name, a class list and a study session: Export Backup saved a file of about 320 KB; Clear All Data (which asks first, with a button that says "Delete everything") emptied every store; Import Backup brought it back. **Classes, students, cards and sessions were identical to before, photos byte for byte, consent and "goes by" included**, and the restored class opened a study session. That is the way to move a class between laptop and phone with no server.
+
+## Phase 2 test results
+
+All in headless Chrome 158 with real clicks, taps and key presses, on the finished branch:
+
+| Suite | Result |
+|---|---|
+| Phase 2 checks, one group per audit item (`p2.py after`) | 97 of 97 |
+| The same checks against the phase 1 version (`p2.py before`), to confirm each problem was real | 34 of the same checks did not hold in the phase 1 version, at least one for every audit item from 1 to 18 and for 20 (item 19, the missing tab icon, showed up in the phase 1 baseline as a missing-file error on every load) |
+| Stored-data upgrade: main, then this branch, then main again | 22 of 22 |
+| Phase 1 suites re-run on the finished branch: baseline 8 of 8, class-list units 33 of 33, add a student 62 of 62, laptop camera 20 of 20, class list 38 of 38, phone 13 of 13, phone over plain http 5 of 5, reload and network off 20 of 20 | All pass |
+| Typed-answer units (nicknames and short forms) | 40 of 40 |
+| A made-up class of 160 (the demo faces reused under made-up names): import 1.0 s, Students screen 0.2 s, slowest search keystroke 3 ms, class list of 163 compared in 0.4 s, Five before class, a 13 MB backup out in 0.4 s and back in 0.5 s, identical | 12 of 12 |
+
+The network log is as in phase 1: the only requests that leave the machine are the two library files from the CDNs, which `main` fetches too. Phase 2 adds none (the demo button fetches `/demo_students.zip` from the app's own address, as `?demo=1` always did).
+
+## Ideas I chose not to build, and why
+
+- **Keeping Dexie and JSZip inside the app** instead of fetching them from CDNs. It would make the first visit work offline and make "nothing leaves your machine" literally true. Not done: it adds two third-party files to your repo and changes two import lines that everything depends on. I think it is worth doing; it should be your decision.
+- **Making the "2/20 students learned" bar honest.** It adds about 8 per cent on purpose. The new overview shows real counts, so the two can disagree. Left because it was a deliberate design choice of yours.
+- **Removing the unreachable dashboard and progress-screen code.** The overview replaces them, but deleting your code was not mine to do.
+- **A pause for the four-second study card.** "Got it" already moves on early; holding it longer would need a new control on a deliberately bare card.
+- **Putting a student you have just added at the front of the queue.** Today they wait their turn behind students not yet met. "Five before class" does not jump them forward either. A real change to scheduling, so left.
+- **Moving the phone's main buttons into thumb reach** (a bottom bar). The layout works one-handed as it is, and a redesign of the card was more than the audit justified.
+- **Merging a backup into existing classes** rather than replacing everything. Useful for two devices in parallel, but it needs rules for conflicts, and a wrong merge is worse than none.
+- **A reminder to back up.** Settings now says when the last one was. A nag felt wrong for this app.
+- **Keyboard hint for the 1 to 4 keys** on multiple choice. The keys work; the hint row is already full.
+- **Guarding against overlapping names** (Alex and Alexander in one class). See the nickname note.
+- **Changes to the landing page.** Out of scope.
+
+## What still needs a person
+
+- **A real phone**: the camera, Home Screen install, tap comfort, and whether iOS keeps the data over weeks.
+- **A real class**: the made-up class of 160 was quick on this laptop, but real photos on a real phone are untested, as is a real class list from the university.
+- **Safari and Firefox.** Everything was run in Chrome.
+- **A screen reader.** The dialog and announcements follow the rules, but nobody has listened to them.
+- **Taste.** The wording throughout, the status names (Know well, Learning, Shaky, New), "Five before class" and "Ready for class", the look of the faces view, and whether nicknames should count as fully correct or only as "almost".
+- **If your device is in dark mode**, the app will now be dark the first time you open this version (audit 13). Settings switches it back.
+
+## Housekeeping
+
+- The service worker cache name is now `v6` (phase 1 made it `v5`), so anyone who ran the phase 1 version gets the new files.
+- The numbered screenshots `01` to `25` were taken again at the end, so they show the finished branch. How those screens looked after phase 1 only is in `audit_before/` and the `_before` pictures.
+- Three fixes have nothing to photograph (audit 1, 15 and 16 are about timers, dates and what is recorded); their before and after are the numbers in the table above.
+- `CHANGES.md` and `AUDIT.md` are listed in `.vercelignore`, so they are not published if the branch is deployed.
