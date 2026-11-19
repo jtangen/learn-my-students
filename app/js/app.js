@@ -12,6 +12,7 @@ import { initStudents, openStudentsScreen } from './students.js';
 let currentClassId = null;
 let scheduler = null;
 let summaryURLs = [];      // object URLs for the photos on the summary screen
+let sessionRecorded = false;   // has the current session been saved (finished, or left part-way)?
 
 const QUICK_COUNT = 5;     // "Five before class"
 
@@ -442,6 +443,7 @@ function importErrorMessage(type, err) {
 
 async function startStudySession(classId, options = {}) {
   currentClassId = classId;
+  sessionRecorded = false;
 
   showLoading('Loading students...');
 
@@ -482,6 +484,7 @@ function updateMasteryDisplay(mastery) {
 
 async function handleSessionComplete(event) {
   const { stats, mastery, troubleSpots } = event.detail;
+  sessionRecorded = true;
 
   // Record session and update streak
   const streak = await recordSessionComplete(currentClassId, stats);
@@ -952,6 +955,11 @@ document.addEventListener('click', async (e) => {
 
   const id = currentScreen.id;
   if (id === 'quizScreen' || id === 'settingsScreen' || id === 'progressScreen' || id === 'summaryScreen' || id === 'dashboardScreen') {
+    // Leaving a session part-way: the reviews done still count as a session (and towards the streak)
+    if (id === 'quizScreen' && scheduler && !sessionRecorded && scheduler.reviewed > 0) {
+      sessionRecorded = true;
+      await recordSessionComplete(currentClassId, scheduler.getSessionStats());
+    }
     cleanupQuiz();
     await renderSetupScreen();
     showScreen('setup');
