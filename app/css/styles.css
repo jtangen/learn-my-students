@@ -2349,3 +2349,45 @@ html { height: -webkit-fill-available; }
   .summary-actions .start-btn:hover,
   .summary-actions .start-btn:active { transform: none; }
 }
+
+/* ─── TOUCH TARGETS ───
+   On phones and other touch screens every button is at least 44px tall
+   (Back was 30px, Study 31px, the bin 30px, the settings tick boxes 13px). */
+.setting-toggle input[type="checkbox"],
+.setting-toggle input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  accent-color: var(--purple);
+}
+
+@media (pointer: coarse), (max-width: 560px) {
+  .back-btn,
+  .class-study-btn,
+  .class-students-btn,
+  .class-delete-btn,
+  .class-five-btn,
+  .icon-btn,
+  .row-btn,
+  .chip,
+  .text-btn,
+  .secondary-btn,
+  .csv-export-btn,
+  .danger-btn,
+  .confirm-no,
+  .confirm-yes,
+  .update-banner button,
+  .jump-link,
+  .photo-help summary,
+  .name-extras summary,
+  .not-on-list summary { min-height: 44px; }
+
+  .class-delete-btn,
+  .icon-btn { min-width: 44px; justify-content: center; }
+
+  .setting-toggle { min-height: 44px; }
+  .photo-help summary,
+  .name-extras summary,
+  .not-on-list summary { display: flex; align-items: center; }
+  .photo-help summary { justify-content: center; }
+}
