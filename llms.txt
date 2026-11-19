@@ -18,6 +18,7 @@ A static web app (no backend, no build step) that helps university instructors l
 
 - Zero-build static site with ES modules
 - IndexedDB via Dexie.js for photo/progress storage (no server)
+- Dexie.js and JSZip are kept inside the app (app/vendor/); nothing is loaded from a CDN
 - FSRS v4.5 spaced repetition in `app/js/fsrs.js`
 - Jaro-Winkler + Double Metaphone fuzzy matching in `app/js/matching.js`
 - Web Speech API for pronunciation (no external services)

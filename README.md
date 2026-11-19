@@ -114,6 +114,7 @@ This app takes student privacy seriously:
 - **All data stays on your device** — photos are stored in IndexedDB, never transmitted
 - **No server, no accounts, no analytics** — the app is a static site with zero backend
 - **No external API calls** — pronunciation uses your browser's built-in speech synthesis
+- **Nothing fetched from anyone else** — the two libraries the app uses are kept inside it (`app/vendor/`), so it asks nothing of any server but its own
 - **FERPA and Australian Privacy Act compliant** — no student data leaves the browser
 - **End-of-semester cleanup** — clear all data with one click in Settings
 - **Backups are a file you keep** — export one in Settings to move your classes to another device; it never passes through a server

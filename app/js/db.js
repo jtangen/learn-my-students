@@ -1,7 +1,7 @@
 // ═══════════════════════════════════
 // Database Layer — Dexie.js / IndexedDB
 // ═══════════════════════════════════
-import Dexie from 'https://cdn.jsdelivr.net/npm/dexie@4/+esm';
+import Dexie from '../vendor/dexie.min.mjs';
 
 const db = new Dexie('LearnMyStudents');
 

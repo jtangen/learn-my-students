@@ -3,7 +3,7 @@
 // Cache-first for app shell
 // ═══════════════════════════════════
 
-const CACHE_NAME = 'learn-my-students-v6';
+const CACHE_NAME = 'learn-my-students-v7';
 
 const PRECACHE_URLS = [
   '/app/',
@@ -21,6 +21,8 @@ const PRECACHE_URLS = [
   '/app/js/stats.js',
   '/app/js/students.js',
   '/app/js/ui.js',
+  '/app/vendor/dexie.min.mjs',
+  '/app/vendor/jszip.min.js',
   '/app/manifest.json',
   '/app/icons/icon-192.png',
   '/app/icons/icon-512.png',
