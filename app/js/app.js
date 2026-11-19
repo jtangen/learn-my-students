@@ -632,6 +632,12 @@ async function renderSettingsScreen() {
   const storage = await getStorageEstimate();
   const storageMB = storage ? (storage.usage / (1024 * 1024)).toFixed(1) : null;
 
+  // When was a backup last saved from this device?
+  const lastBackupAt = await getSetting('lastBackupAt');
+  const lastBackup = lastBackupAt && !isNaN(new Date(lastBackupAt))
+    ? `Last backup saved ${new Date(lastBackupAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}.`
+    : 'No backup has been saved from this device yet.';
+
   container.innerHTML = `
     <div class="settings-section">
       <h3>Daily Goal</h3>
@@ -671,6 +677,7 @@ async function renderSettingsScreen() {
     <div class="settings-section">
       <h3>Data</h3>
       ${storageMB ? `<p class="settings-desc">Storage used: ${storageMB} MB</p>` : ''}
+      <p class="settings-desc">A backup is one file with your classes, photos and progress. Save one to keep a copy, or to move everything to another device: export here, send the file across yourself, and import it there. <strong id="lastBackupNote">${esc(lastBackup)}</strong></p>
 
       <div class="data-actions">
         <button class="secondary-btn" id="exportBackupBtn">
@@ -754,7 +761,9 @@ async function renderSettingsScreen() {
       a.download = `learn-my-students-backup-${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
+      await setSetting('lastBackupAt', new Date().toISOString());
       hideLoading();
+      await renderSettingsScreen();
       showToast('Backup exported!', 'success');
     } catch (err) {
       hideLoading();
