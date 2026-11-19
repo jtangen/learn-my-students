@@ -2117,6 +2117,46 @@ html { height: -webkit-fill-available; }
   .student-row { gap: 10px; }
 }
 
+/* ─── READABLE GREYS ───
+   Small grey text measured 1.7:1 to 2.7:1 against its background. --gray-700 gives
+   4.5:1 or better in both themes (#616161 on white, #ccccee on the dark cards). */
+.subtitle,
+.class-count,
+.prompt-text,
+.study-hint,
+.summary-message,
+.summary-stat-label,
+.settings-desc,
+.goal-label,
+.format-hint,
+.device-hint,
+.mastery-text,
+.mastery-label,
+.kbd-hints,
+.freeze-count,
+.reverse-prompt,
+.phonetic-guide,
+.dash-forecast-label,
+.section-title,
+.section-divider,
+.or-divider,
+.setup-btn,
+.back-btn,
+.skip-btn,
+.icon-btn,
+.class-delete-btn,
+.text-btn,
+.student-number,
+.optional,
+.list-source,
+.not-on-list,
+.mapping-preview-title,
+.mapping-table th { color: var(--gray-700); }
+
+.class-name-input::placeholder,
+.name-input::placeholder,
+.mnemonic-field::placeholder { color: var(--gray-600); opacity: 1; }
+
 /* ─── DARK MODE ─── */
 [data-theme="dark"] {
   --purple: #9B6FC4;
@@ -2270,3 +2310,19 @@ html { height: -webkit-fill-available; }
 [data-theme="dark"] .list-summary {
   color: #ddd;
 }
+
+/* Dark mode: purple and red text on dark panels, lifted to 4.5:1 */
+[data-theme="dark"] .photo-help summary,
+[data-theme="dark"] .photo-help a,
+[data-theme="dark"] .name-extras summary,
+[data-theme="dark"] .jump-link,
+[data-theme="dark"] .play-btn,
+[data-theme="dark"] .hint-text,
+[data-theme="dark"] .secondary-btn,
+[data-theme="dark"] .class-students-btn,
+[data-theme="dark"] .class-five-btn { color: var(--purple-light); }
+
+[data-theme="dark"] .feedback.incorrect-feedback,
+[data-theme="dark"] .form-error,
+[data-theme="dark"] .mc-option.wrong,
+[data-theme="dark"] .trouble-lapses { color: #ff8a80; }
