@@ -62,14 +62,28 @@ async function loadDemoClass() {
 
 // ─── Dark Mode ───
 
+function applyTheme(dark) {
+  if (dark) document.documentElement.setAttribute('data-theme', 'dark');
+  else document.documentElement.removeAttribute('data-theme');
+}
+
 async function initDarkMode() {
   const saved = await getSetting('darkMode');
-  if (saved === 'on') {
-    document.documentElement.setAttribute('data-theme', 'dark');
-  } else if (saved === 'off') {
-    document.documentElement.removeAttribute('data-theme');
+  const system = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+
+  if (saved === 'on' || saved === 'off') {
+    applyTheme(saved === 'on');
+  } else {
+    // No choice made yet: follow the device
+    applyTheme(!!(system && system.matches));
   }
-  // If null, respect system preference (CSS handles via prefers-color-scheme)
+
+  // Keep following the device for as long as no choice has been made
+  if (system && system.addEventListener) {
+    system.addEventListener('change', async (e) => {
+      if (await getSetting('darkMode') == null) applyTheme(e.matches);
+    });
+  }
 }
 
 // ─── Initialization ───
@@ -606,10 +620,10 @@ async function renderSettingsScreen() {
       <h3>Appearance</h3>
       <div class="setting-row">
         <label class="setting-toggle">
-          <input type="checkbox" id="darkModeToggle" ${darkMode === 'on' ? 'checked' : ''}>
+          <input type="checkbox" id="darkModeToggle" ${document.documentElement.getAttribute('data-theme') === 'dark' ? 'checked' : ''}>
           <span>Dark mode</span>
         </label>
-        <p class="settings-desc">${darkMode ? '' : 'Currently following system preference'}</p>
+        <p class="settings-desc" id="darkModeNote">${darkMode ? '' : "Following your device's setting until you choose"}</p>
       </div>
     </div>
 
@@ -680,11 +694,9 @@ async function renderSettingsScreen() {
     darkToggle.onchange = async () => {
       const on = darkToggle.checked;
       await setSetting('darkMode', on ? 'on' : 'off');
-      if (on) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-      } else {
-        document.documentElement.removeAttribute('data-theme');
-      }
+      applyTheme(on);
+      const note = document.getElementById('darkModeNote');
+      if (note) note.textContent = '';
     };
   }
 
