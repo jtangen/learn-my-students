@@ -758,7 +758,9 @@ async function renderSettingsScreen() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `learn-my-students-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      const today = new Date();
+      const two = n => String(n).padStart(2, '0');
+      a.download = `learn-my-students-backup-${today.getFullYear()}-${two(today.getMonth() + 1)}-${two(today.getDate())}.json`;
       a.click();
       URL.revokeObjectURL(url);
       await setSetting('lastBackupAt', new Date().toISOString());
