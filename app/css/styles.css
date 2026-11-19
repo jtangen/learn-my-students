@@ -2391,3 +2391,7 @@ html { height: -webkit-fill-available; }
   .not-on-list summary { display: flex; align-items: center; }
   .photo-help summary { justify-content: center; }
 }
+
+/* A toast sits over the bottom of the screen, where phone layouts put their main button.
+   It must never swallow a tap meant for the button underneath. */
+.toast { pointer-events: none; }
