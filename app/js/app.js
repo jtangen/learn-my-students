@@ -272,7 +272,7 @@ async function renderSetupScreen() {
     classList.querySelectorAll('.class-delete-btn').forEach(btn => {
       btn.onclick = async () => {
         const cls = await getClass(parseInt(btn.dataset.id));
-        if (await confirmDialog(`Delete "${cls.name}" and all its data?`)) {
+        if (await confirmDialog(`Delete "${cls.name}" with its photos and your progress? This cannot be undone.`, 'Delete')) {
           await deleteClass(parseInt(btn.dataset.id));
           await renderSetupScreen();
           showToast('Class deleted');
@@ -715,7 +715,7 @@ async function renderSettingsScreen() {
   backupInput.onchange = async () => {
     const file = backupInput.files[0];
     if (!file) return;
-    if (!await confirmDialog('This will replace all existing data with the backup. Continue?')) return;
+    if (!await confirmDialog('Loading a backup replaces everything on this device with what is in the file. Continue?', 'Replace')) return;
     showLoading('Importing backup...');
     try {
       const text = await file.text();
@@ -750,7 +750,7 @@ async function renderSettingsScreen() {
 
   // Clear all data
   document.getElementById('clearAllBtn').onclick = async () => {
-    if (await confirmDialog('This will permanently delete all classes, students, photos, and your learning progress. Are you sure?')) {
+    if (await confirmDialog('This will permanently delete all classes, students, photos, and your learning progress. Are you sure?', 'Delete everything')) {
       await clearAllData();
       showToast('All data cleared');
       await renderSetupScreen();

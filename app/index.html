@@ -253,15 +253,18 @@
 <!-- ══════════════════════════════════ -->
 <!-- CONFIRM MODAL                      -->
 <!-- ══════════════════════════════════ -->
-<div class="modal-overlay" id="confirmModal">
+<div class="modal-overlay" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmMessage">
   <div class="modal-card">
-    <p class="confirm-message"></p>
+    <p class="confirm-message" id="confirmMessage"></p>
     <div class="modal-actions">
       <button class="confirm-no">Cancel</button>
       <button class="confirm-yes">Confirm</button>
     </div>
   </div>
 </div>
+
+<!-- Toast messages are repeated here for screen readers -->
+<div id="liveRegion" class="sr-only" role="status" aria-live="polite"></div>
 
 <script type="module" src="js/app.js"></script>
 </body>

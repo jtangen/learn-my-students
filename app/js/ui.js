@@ -55,6 +55,13 @@ export function showToast(message, type = 'info', duration = 3000) {
   toast.textContent = message;
   document.body.appendChild(toast);
 
+  // Say it to screen readers too (the toast itself comes and goes too quickly to be found)
+  const live = document.getElementById('liveRegion');
+  if (live) {
+    live.textContent = '';
+    setTimeout(() => { live.textContent = message; }, 50);
+  }
+
   // Trigger animation
   requestAnimationFrame(() => toast.classList.add('show'));
 
@@ -107,31 +114,56 @@ export function formatDelta(current, previous) {
   return '0%';
 }
 
-/** Promise-based confirm dialog */
-export function confirmDialog(message) {
+/**
+ * Promise-based confirm dialog.
+ * `confirmLabel` is the word on the button that goes ahead ("Delete", "Replace").
+ * Focus starts on Cancel, stays inside the dialog, Escape cancels, and focus
+ * goes back to where it was when the dialog closes.
+ */
+export function confirmDialog(message, confirmLabel = 'Confirm') {
   return new Promise(resolve => {
-    // Use a custom modal if available, otherwise browser confirm
     const modal = document.getElementById('confirmModal');
-    if (modal) {
-      const msgEl = modal.querySelector('.confirm-message');
-      const yesBtn = modal.querySelector('.confirm-yes');
-      const noBtn = modal.querySelector('.confirm-no');
-      if (msgEl) msgEl.textContent = message;
-      modal.classList.add('active');
-
-      const cleanup = (result) => {
-        modal.classList.remove('active');
-        yesBtn.removeEventListener('click', onYes);
-        noBtn.removeEventListener('click', onNo);
-        resolve(result);
-      };
-      const onYes = () => cleanup(true);
-      const onNo = () => cleanup(false);
-      yesBtn.addEventListener('click', onYes);
-      noBtn.addEventListener('click', onNo);
-    } else {
+    if (!modal) {
       resolve(confirm(message));
+      return;
     }
+    const msgEl = modal.querySelector('.confirm-message');
+    const yesBtn = modal.querySelector('.confirm-yes');
+    const noBtn = modal.querySelector('.confirm-no');
+    const opener = document.activeElement;
+
+    if (msgEl) msgEl.textContent = message;
+    yesBtn.textContent = confirmLabel;
+    modal.classList.add('active');
+    noBtn.focus();
+
+    const cleanup = (result) => {
+      modal.classList.remove('active');
+      yesBtn.removeEventListener('click', onYes);
+      noBtn.removeEventListener('click', onNo);
+      modal.removeEventListener('keydown', onKey);
+      modal.removeEventListener('mousedown', onBackdrop);
+      if (opener && opener.focus && document.contains(opener)) opener.focus();
+      resolve(result);
+    };
+    const onYes = () => cleanup(true);
+    const onNo = () => cleanup(false);
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        cleanup(false);
+      } else if (e.key === 'Tab') {
+        e.preventDefault();
+        (document.activeElement === noBtn ? yesBtn : noBtn).focus();
+      }
+    };
+    const onBackdrop = (e) => { if (e.target === modal) cleanup(false); };
+
+    yesBtn.addEventListener('click', onYes);
+    noBtn.addEventListener('click', onNo);
+    modal.addEventListener('keydown', onKey);
+    modal.addEventListener('mousedown', onBackdrop);
   });
 }
 

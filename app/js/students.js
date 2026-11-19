@@ -293,7 +293,7 @@ async function renderStudents() {
     btn.onclick = async () => {
       const student = await getStudent(parseInt(btn.dataset.id));
       if (!student) return;
-      if (await confirmDialog(`Delete ${fullName(student)} and their photo from this device? Your progress with them goes too.`)) {
+      if (await confirmDialog(`Delete ${fullName(student)} and their photo from this device? Your progress with them goes too.`, 'Delete')) {
         await deleteStudent(student.id);
         showToast('Student deleted');
         await renderStudents();
@@ -362,7 +362,7 @@ function wireClassListSection(cls, students) {
   const removeBtn = document.getElementById('classListRemoveBtn');
   if (removeBtn) {
     removeBtn.onclick = async () => {
-      if (await confirmDialog('Remove the class list from this device? Students and photos are not affected.')) {
+      if (await confirmDialog('Remove the class list from this device? Students and photos are not affected.', 'Remove')) {
         await updateClass(classId, { classList: null });
         lastRows = null;
         await renderStudents();
@@ -898,7 +898,7 @@ async function saveForm() {
   }
   if (form.mode === 'add') {
     const sameName = others.find(s => fullName(s).toLowerCase() === `${preferredName} ${familyName}`.toLowerCase() && (!s.studentId || !studentId));
-    if (sameName && !await confirmDialog(`There is already a ${fullName(sameName)} in this class. Add another student with the same name?`)) return;
+    if (sameName && !await confirmDialog(`There is already a ${fullName(sameName)} in this class. Add another student with the same name?`, 'Add')) return;
   }
 
   const photoConsent = form.photo
