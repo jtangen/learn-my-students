@@ -47,9 +47,15 @@ export const STATUS_LABELS = { known: 'Know well', learning: 'Learning', shaky: 
  * Session scheduler: manages the quiz queue for a study session
  */
 export class SessionScheduler {
-  constructor(classId, dailyGoal = 15) {
+  /**
+   * @param {object} options - { quick: n } runs a short session ("Five before class"):
+   *   n students, each taken from seeing the name to typing it from memory.
+   */
+  constructor(classId, dailyGoal = 15, options = {}) {
     this.classId = classId;
     this.dailyGoal = dailyGoal;
+    this.quick = options.quick || 0;
+    this.quickIds = [];            // the students chosen for a short session
     this.queue = [];
     this.reviewed = 0;
     this.correct = 0;
@@ -88,6 +94,12 @@ export class SessionScheduler {
   async buildQueue() {
     const now = new Date();
 
+    if (this.quick) {
+      this.queue = await this.pickQuick(this.quick);
+      this.quickIds = this.queue.map(c => c.studentId);
+      return;
+    }
+
     // Get due review cards
     const dueCards = await getDueCards(this.classId, now);
 
@@ -125,6 +137,24 @@ export class SessionScheduler {
       allCards.sort((a, b) => new Date(a.due) - new Date(b.due));
       this.queue = allCards.slice(0, 20);
     }
+  }
+
+  /**
+   * Choose the students for a short session: anyone shaky first (learnt and
+   * lost), then students not met yet, then the ones known least.
+   */
+  async pickQuick(count) {
+    const all = (await getFSRSCardsByClass(this.classId)).filter(c => this.students.has(c.studentId));
+    const shaky = all.filter(c => cardStatus(c) === 'shaky');
+    const fresh = all.filter(c => c.state === State.NEW);
+    const rest = all.filter(c => c.state !== State.NEW && cardStatus(c) !== 'shaky')
+      .sort((a, b) => (a.stability || 0) - (b.stability || 0));
+    return [...shaky, ...fresh, ...rest].slice(0, count);
+  }
+
+  /** The students practised in a short session, in the order chosen */
+  getQuickStudents() {
+    return this.quickIds.map(id => this.students.get(id)).filter(Boolean);
   }
 
   /**
@@ -269,6 +299,12 @@ export class SessionScheduler {
     if (grade === Grade.AGAIN) {
       const insertAt = Math.min(this.queue.length, 3 + Math.floor(Math.random() * 3));
       this.queue.splice(insertAt, 0, updated);
+    } else if (this.quick && (grade < Grade.GOOD || (card.encounterCount || 0) < 3)) {
+      // Short session: a right answer short of typed recall comes back for the next step
+      // (multiple choice, then a first-letter hint, then typing the name unaided), and a
+      // near miss comes back for another go. A student is done once typed right unaided.
+      const insertAt = Math.min(this.queue.length, 2 + Math.floor(Math.random() * 2));
+      this.queue.splice(insertAt, 0, updated);
     }
 
     return updated;
@@ -295,6 +331,7 @@ export class SessionScheduler {
    * Check if the session's daily goal has been reached
    */
   isGoalReached() {
+    if (this.quick) return false;   // a short session ends when its students are done
     return this.reviewed >= this.dailyGoal;
   }
 

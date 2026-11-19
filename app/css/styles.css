@@ -1605,6 +1605,59 @@ html { height: -webkit-fill-available; }
 .class-students-btn:hover { border-color: var(--purple); }
 .class-students-btn:active { background: var(--purple-pale); }
 
+/* "Five before class": a short session, on its own line under the class */
+.class-five-btn {
+  flex: 1 1 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #fff;
+  color: var(--purple);
+  border: 1.5px solid var(--purple-pale);
+  border-radius: var(--radius-xs);
+  font-size: 13px;
+  font-family: var(--font);
+  text-align: left;
+  line-height: 1.35;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.class-five-btn svg { flex-shrink: 0; }
+.class-five-btn strong { font-weight: 700; }
+.class-five-btn .five-sub { color: var(--gray-700); }
+.class-five-btn:hover { border-color: var(--purple); }
+.class-five-btn:active { background: var(--purple-pale); }
+
+.practised {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.practised-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 76px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.25;
+}
+
+.practised-item img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center 15%;
+}
+
 .students-class {
   font-size: 14px;
   color: var(--gray-600);
@@ -2187,6 +2240,11 @@ html { height: -webkit-fill-available; }
 }
 
 [data-theme="dark"] .class-students-btn { color: var(--purple); }
+
+[data-theme="dark"] .class-five-btn {
+  background: var(--gray-100);
+  border-color: var(--gray-300);
+}
 
 [data-theme="dark"] .photo-frame {
   background: linear-gradient(135deg, #1a1830, #222240);

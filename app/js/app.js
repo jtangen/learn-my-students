@@ -11,6 +11,9 @@ import { isSpeechSupported } from './speech.js';
 import { initStudents, openStudentsScreen } from './students.js';
 let currentClassId = null;
 let scheduler = null;
+let summaryURLs = [];      // object URLs for the photos on the summary screen
+
+const QUICK_COUNT = 5;     // "Five before class"
 
 // ─── Demo Auto-Import ───
 
@@ -242,12 +245,21 @@ async function renderSetupScreen() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
           </button>
         </div>
+        ${c.studentCount > 0 ? `
+          <button class="class-five-btn" data-id="${c.id}" aria-label="Five before class: a short session for ${esc(c.name)}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+            <span><strong>${c.studentCount >= QUICK_COUNT ? 'Five' : c.studentCount === 1 ? 'One' : 'A few'} before class</strong> <span class="five-sub">${Math.min(QUICK_COUNT, c.studentCount)} ${c.studentCount === 1 ? 'student' : 'students'}, from first look to typing the name, in a few minutes</span></span>
+          </button>
+        ` : ''}
       </div>
     `).join('');
 
     // Attach handlers
     classList.querySelectorAll('.class-study-btn').forEach(btn => {
       btn.onclick = () => startStudySession(parseInt(btn.dataset.id));
+    });
+    classList.querySelectorAll('.class-five-btn').forEach(btn => {
+      btn.onclick = () => startStudySession(parseInt(btn.dataset.id), { quick: QUICK_COUNT });
     });
     classList.querySelectorAll('.class-students-btn').forEach(btn => {
       btn.onclick = () => openStudentsScreen(parseInt(btn.dataset.id));
@@ -384,13 +396,13 @@ async function handleImport(type, fileOrList) {
 
 // ─── Study Session ───
 
-async function startStudySession(classId) {
+async function startStudySession(classId, options = {}) {
   currentClassId = classId;
 
   showLoading('Loading students...');
 
   const goal = await getDailyGoal();
-  scheduler = new SessionScheduler(classId, goal.reviews);
+  scheduler = new SessionScheduler(classId, goal.reviews, options);
 
   // Check for reverse mode
   const reverseMode = await getSetting('reverseMode');
@@ -449,13 +461,31 @@ function renderSummaryScreen(summary, troubleSpots, milestone) {
   const container = document.getElementById('summaryContent');
   if (!container) return;
 
+  // A short session ("Five before class") shows who was practised
+  for (const url of summaryURLs) URL.revokeObjectURL(url);
+  summaryURLs = [];
+  const practised = scheduler && scheduler.quick ? scheduler.getQuickStudents() : [];
+  const practisedHTML = practised.length === 0 ? '' : `
+    <div class="practised">
+      ${practised.map(s => {
+        let img = '';
+        if (s.thumbnail) {
+          const url = URL.createObjectURL(s.thumbnail);
+          summaryURLs.push(url);
+          img = `<img src="${url}" alt="">`;
+        }
+        return `<div class="practised-item">${img}<span>${esc(nameOf(s))}</span></div>`;
+      }).join('')}
+    </div>`;
+
   container.innerHTML = `
     ${milestone ? `<div class="milestone-banner" role="alert">${esc(milestone)}</div>` : ''}
 
     <div class="summary-header">
-      <h2>Session Complete</h2>
-      <p class="summary-message">${esc(summary.accuracyMessage)}</p>
+      <h2>${practised.length ? 'Ready for class' : 'Session Complete'}</h2>
+      <p class="summary-message">${practised.length ? `You have just typed ${practised.length === 1 ? 'this name' : `these ${practised.length} names`} from memory.` : esc(summary.accuracyMessage)}</p>
     </div>
+    ${practisedHTML}
 
     <div class="summary-stats-grid">
       <div class="summary-stat">
