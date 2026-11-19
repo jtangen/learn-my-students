@@ -24,7 +24,7 @@ Research shows that when instructors use student names, it helps students develo
 |---------|-------------|
 | **FSRS v4.5 Spaced Repetition** | The algorithm behind Anki, trained on 700M+ reviews. Shows you each face right before you'd forget the name. |
 | **Progressive Difficulty** | Study (view name) → Multiple Choice → Hinted Recall → Full Typed Recall. Students advance phases on success. |
-| **Smart Fuzzy Matching** | Jaro-Winkler string similarity + Double Metaphone phonetic matching + 50+ nickname mappings. Gives credit for close answers. |
+| **Smart Fuzzy Matching** | Jaro-Winkler string similarity + Double Metaphone phonetic matching + nicknames for 75+ names. Small typos, known nicknames ("Liz" for Elizabeth) and short forms ("Nik" for Nikhil) count as correct, and the listed name is shown. A sound-alike or near miss is marked "almost": not counted as correct, but not treated as forgotten. |
 | **100% Private** | All photos and data stay in your browser's IndexedDB. Nothing is ever uploaded anywhere. No accounts, no analytics. |
 | **Works Offline** | Installable as a PWA. Study on the bus, in the office, or anywhere without internet. |
 | **Name Pronunciation** | Hear any name spoken aloud via your browser's built-in Web Speech API. No external services. |

@@ -230,7 +230,7 @@ export function doubleMetaphone(word) {
 
 // ─── Nickname Lookup ───
 
-const NICKNAME_MAP = {
+export const NICKNAME_MAP = {
   'robert': ['bob', 'rob', 'robbie', 'bobby'],
   'william': ['will', 'bill', 'billy', 'liam', 'willy'],
   'elizabeth': ['liz', 'beth', 'lizzie', 'eliza', 'betty'],
@@ -283,6 +283,32 @@ const NICKNAME_MAP = {
   'susanna': ['sue', 'susie', 'suzy'],
   'deborah': ['deb', 'debbie'],
   'dorothy': ['dot', 'dottie'],
+  'amelia': ['millie', 'amy', 'mia'],
+  'angus': ['gus'],
+  'cameron': ['cam'],
+  'charlotte': ['charlie', 'lottie'],
+  'dominic': ['dom'],
+  'eleanor': ['ellie', 'nell', 'elle'],
+  'emily': ['em', 'emmy', 'emmie'],
+  'georgia': ['georgie', 'george'],
+  'harrison': ['harry'],
+  'henry': ['harry', 'hank'],
+  'isabella': ['bella', 'izzy', 'issy', 'isa'],
+  'jackson': ['jack', 'jax'],
+  'jacob': ['jake'],
+  'lachlan': ['lachie', 'lach', 'lockie'],
+  'madison': ['maddie', 'maddy'],
+  'matilda': ['tilly', 'tilda', 'mattie'],
+  'maxwell': ['max'],
+  'mohammed': ['mo'],
+  'muhammad': ['mo'],
+  'nathan': ['nate', 'nat'],
+  'nikhil': ['nik', 'nick'],
+  'oliver': ['ollie', 'oli'],
+  'olivia': ['liv', 'livvy', 'ollie'],
+  'penelope': ['penny'],
+  'sebastian': ['seb'],
+  'zachary': ['zac', 'zach', 'zack'],
 };
 
 // Build reverse lookup
@@ -318,16 +344,36 @@ function isNickname(input, target) {
   return false;
 }
 
+/**
+ * Is the input the front of the name, used as a short form ("Nik" for Nikhil,
+ * "Soph" for Sophie)? At least three letters, at least half the name, and at
+ * least two letters shorter than it (one letter short is a typo, handled by
+ * the similarity score).
+ */
+function isShortForm(input, target) {
+  return input.length >= 3 &&
+    target.length - input.length >= 2 &&
+    input.length * 2 >= target.length &&
+    /^[\p{L}]+$/u.test(input) &&
+    target.startsWith(input);
+}
+
 // ─── Combined Matching ───
 
 /**
  * Match a user's input against a target name with tiered feedback.
  *
  * @returns {{ match: string, score: number, grade: number, feedback: string }}
- *   - match: 'exact' | 'close' | 'almost' | 'phonetic' | 'nickname' | 'close_wrong' | 'wrong'
+ *   - match: 'exact' | 'nickname' | 'close' | 'almost' | 'phonetic' | 'close_wrong' | 'wrong'
  *   - score: 0-1 similarity score
  *   - grade: FSRS grade (1=Again, 2=Hard, 3=Good, 4=Easy)
  *   - feedback: human-readable feedback string
+ *
+ * What counts as correct (grade 3 or 4): the name itself, a small typo, a known
+ * nickname in either direction ("Liz" for Elizabeth, "William" for Bill), and
+ * a short form made from the front of the name ("Nik" for Nikhil).
+ * 'almost' and 'phonetic' are grade 2: shown as not quite right, but the card
+ * is not treated as forgotten.
  */
 export function matchName(input, target) {
   if (!input || !target) return { match: 'wrong', score: 0, grade: 1, feedback: 'Not quite...' };
@@ -337,6 +383,13 @@ export function matchName(input, target) {
 
   // Exact match
   if (a === b) return { match: 'exact', score: 1.0, grade: 4, feedback: 'Correct!' };
+
+  // A nickname or short form of this name: right person, so it counts. The listed
+  // name is shown, so the full name is still learned. (Checked before the
+  // similarity bands, which used to catch "Kate" for Katherine as merely "almost".)
+  if (isNickname(a, b) || isShortForm(a, b)) {
+    return { match: 'nickname', score: 0.9, grade: 3, feedback: `Correct! On the list as "${target}"` };
+  }
 
   // Jaro-Winkler similarity
   const jw = jaroWinkler(a, b);
@@ -354,11 +407,6 @@ export function matchName(input, target) {
   const [p2a, p2b] = doubleMetaphone(b);
   if (p1a && p2a && (p1a === p2a || p1a === p2b || (p1b && (p1b === p2a || p1b === p2b)))) {
     return { match: 'phonetic', score: 0.85, grade: 2, feedback: `Right sound! Spelled "${target}"` };
-  }
-
-  // Nickname match
-  if (isNickname(a, b)) {
-    return { match: 'nickname', score: 0.80, grade: 2, feedback: `That's a nickname! Full name: "${target}"` };
   }
 
   // Close but wrong

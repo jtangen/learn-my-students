@@ -80,7 +80,7 @@ All student data stays in the browser's IndexedDB. No server calls, no analytics
 
 - FSRS v4.5: 17-parameter model, power-law forgetting curve, card states (new → learning → review → relearning)
 - Progressive difficulty: study (4s view) → MC (4 options) → hinted recall (first letter) → full typed recall
-- Fuzzy matching thresholds: Jaro-Winkler ≥0.92 correct, 0.85-0.92 almost, Double Metaphone for phonetic
+- Fuzzy matching, in order: exact (grade 4); a nickname from the table of 78 names, in either direction, or a short form made from the front of the name (grade 3, counted correct, listed name shown); Jaro-Winkler ≥0.92 small typo (grade 3); 0.85-0.92 almost (grade 2); Double Metaphone sound-alike (grade 2). Grade 2 is not counted as correct but is not a lapse
 - Batch intro: 6 new students per session, ~75% review / 25% new interleaving
 - Daily goals: casual (5), regular (15), intense (30) reviews
 - Streaks: minimum 5 reviews to count, 2 freeze days, replenish every 7 days, counted by the local calendar day
