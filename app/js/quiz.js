@@ -16,6 +16,14 @@ let currentIsReverse = false;
 let questionStartTime = 0;
 let isPlaying = false;
 let activePhotoURL = null;
+let studyTimer = null;   // the 4-second auto-advance on a study card
+
+function clearStudyTimer() {
+  if (studyTimer) {
+    clearTimeout(studyTimer);
+    studyTimer = null;
+  }
+}
 
 
 // ─── Initialize Quiz ───
@@ -28,6 +36,7 @@ export function initQuiz(sessionScheduler) {
 // ─── Display Next Card ───
 
 export async function showNextCard() {
+  clearStudyTimer();
   if (!scheduler) return;
 
   // Check if session is complete
@@ -115,15 +124,17 @@ function renderStudyPhase() {
     requestAnimationFrame(() => fill.style.width = '100%');
   }
 
-  const autoAdvanceTimer = setTimeout(() => advanceFromStudy(), 4000);
+  // The timer belongs to this card: it is cleared when the card changes or the quiz is left
+  const card = currentCard;
+  clearStudyTimer();
+  studyTimer = setTimeout(() => advanceFromStudy(card), 4000);
 
-  document.getElementById('studyNextBtn').onclick = () => {
-    clearTimeout(autoAdvanceTimer);
-    advanceFromStudy();
-  };
+  document.getElementById('studyNextBtn').onclick = () => advanceFromStudy(card);
 }
 
-async function advanceFromStudy() {
+async function advanceFromStudy(card) {
+  clearStudyTimer();
+  if (!scheduler || card !== currentCard) return;
   await scheduler.recordStudyPhaseComplete(currentCard);
   showNextCard();
 }
@@ -558,6 +569,7 @@ function handleKeyboard(e) {
 }
 
 export function cleanup() {
+  clearStudyTimer();
   if (activePhotoURL) {
     URL.revokeObjectURL(activePhotoURL);
     activePhotoURL = null;
