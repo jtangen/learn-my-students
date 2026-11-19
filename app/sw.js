@@ -3,7 +3,7 @@
 // Cache-first for app shell
 // ═══════════════════════════════════
 
-const CACHE_NAME = 'learn-my-students-v4';
+const CACHE_NAME = 'learn-my-students-v5';
 
 const PRECACHE_URLS = [
   '/app/',
@@ -16,8 +16,10 @@ const PRECACHE_URLS = [
   '/app/js/quiz.js',
   '/app/js/import.js',
   '/app/js/matching.js',
+  '/app/js/roster.js',
   '/app/js/speech.js',
   '/app/js/stats.js',
+  '/app/js/students.js',
   '/app/js/ui.js',
   '/app/manifest.json',
   '/app/icons/icon-192.png',
