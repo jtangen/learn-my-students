@@ -26,6 +26,24 @@ function nextPhase(currentPhase) {
 }
 
 /**
+ * Where you stand with a student, from their card:
+ *   'new'      not met yet
+ *   'shaky'    forgotten at the last attempt, or missed twice and still fragile
+ *   'learning' met and on the way
+ *   'known'    stable for three weeks or more (the same line the mastery bar uses)
+ */
+export function cardStatus(card) {
+  if (!card) return 'new';
+  if (card.state === State.NEW) return card.encounterCount ? 'learning' : 'new';
+  if (card.stability >= 21) return 'known';
+  if (card.state === State.LEARNING || card.state === State.RELEARNING) return 'shaky';
+  if ((card.lapses || 0) >= 2 && card.stability < 7) return 'shaky';
+  return 'learning';
+}
+
+export const STATUS_LABELS = { known: 'Know well', learning: 'Learning', shaky: 'Shaky', new: 'New' };
+
+/**
  * Session scheduler: manages the quiz queue for a study session
  */
 export class SessionScheduler {

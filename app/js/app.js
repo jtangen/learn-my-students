@@ -3,7 +3,7 @@
 // ═══════════════════════════════════
 import { db, getClasses, addClass, deleteClass, getClass, getStudentsByClass, getSetting, setSetting, clearAllData, requestPersistentStorage, updateClass, exportAllData, importBackupData, exportProgressCSV, getStorageEstimate, getFSRSCardsByClass } from './db.js';
 import { importFromZip, importFromFolder } from './import.js';
-import { SessionScheduler } from './scheduler.js';
+import { SessionScheduler, cardStatus } from './scheduler.js';
 import { initQuiz, showNextCard, cleanup as cleanupQuiz } from './quiz.js';
 import { getDailyGoal, setDailyGoal, GOAL_LEVELS, checkStreak, getStreakData, recordSessionComplete, buildSessionSummary, checkMilestone } from './stats.js';
 import { showScreen, showLoading, hideLoading, showToast, esc, isMobile, isIOS, confirmDialog, renderProgressRing, nameOf } from './ui.js';
@@ -209,12 +209,31 @@ async function renderSetupScreen() {
     }
   }
 
+  // What is waiting in each class: reviews due now, and students not met yet
+  const waiting = new Map();
+  const now = new Date();
+  for (const c of classes) {
+    const cards = await getFSRSCardsByClass(c.id);
+    waiting.set(c.id, {
+      due: cards.filter(card => card.state !== 'new' && new Date(card.due) <= now).length,
+      fresh: cards.filter(card => cardStatus(card) === 'new').length,
+    });
+  }
+  const waitingText = (c) => {
+    const w = waiting.get(c.id);
+    if (!w || !(c.studentCount > 0)) return '';
+    const parts = [];
+    if (w.due > 0) parts.push(`${w.due} due`);
+    if (w.fresh > 0) parts.push(`${w.fresh} new`);
+    return ' · ' + (parts.length ? parts.join(' · ') : 'all caught up');
+  };
+
   if (classes.length > 0 && classList && existingSection) {
     classList.innerHTML = classes.map(c => `
       <div class="class-item" data-id="${c.id}">
         <div class="class-info">
           <span class="class-name">${esc(c.name)}</span>
-          <span class="class-count">${c.studentCount || 0} students</span>
+          <span class="class-count">${c.studentCount || 0} student${c.studentCount === 1 ? '' : 's'}${waitingText(c)}</span>
         </div>
         <div class="class-actions">
           <button class="class-students-btn" data-id="${c.id}" aria-label="Students in ${esc(c.name)}: add, edit or delete">Students</button>

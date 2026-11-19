@@ -3,7 +3,8 @@
 // Everything here happens on the device: camera frames are drawn to a
 // canvas and stored in IndexedDB, and the class list is read in the browser.
 // ═══════════════════════════════════
-import { getClass, getStudentsByClass, getStudent, addStudent, updateStudent, deleteStudent, updateClass } from './db.js';
+import { getClass, getStudentsByClass, getStudent, addStudent, updateStudent, deleteStudent, updateClass, getFSRSCardsByClass } from './db.js';
+import { cardStatus, STATUS_LABELS } from './scheduler.js';
 import { preparePhoto } from './import.js';
 import { parseCSV, detectColumns, readClassList, compareClassList, mappingIsUsable, numberKey } from './roster.js';
 import { showScreen, showToast, showLoading, hideLoading, esc, isMobile, confirmDialog, nameOf } from './ui.js';
@@ -25,6 +26,7 @@ let thumbURLs = [];        // object URLs for the list, revoked when it is redra
 let pendingList = null;    // a class list waiting for its columns to be confirmed
 let lastRows = null;       // the rows of the list just loaded, so its columns can be changed
 let form = null;           // the open add/edit form
+let view = { filter: 'all', query: '', faces: false };   // how the class overview is being looked at
 
 // ─── Opening and leaving ───
 
@@ -97,6 +99,7 @@ export async function openStudentsScreen(id) {
   classId = id;
   pendingList = null;
   lastRows = null;
+  view = { filter: 'all', query: '', faces: false };
   await renderStudents();
   showScreen('students');
   window.scrollTo(0, 0);
@@ -139,6 +142,11 @@ function plural(n, one, many) {
   return `${n} ${n === 1 ? one : many}`;
 }
 
+function scrollToClassList() {
+  const calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.getElementById('classListSection')?.scrollIntoView({ block: 'start', behavior: calm ? 'auto' : 'smooth' });
+}
+
 async function renderStudents() {
   const container = document.getElementById('studentsContent');
   if (!container || classId == null) return;
@@ -152,6 +160,23 @@ async function renderStudents() {
   for (const url of thumbURLs) URL.revokeObjectURL(url);
   thumbURLs = [];
 
+  // Where you stand with each student
+  const cards = await getFSRSCardsByClass(classId);
+  const cardOf = new Map(cards.map(c => [c.studentId, c]));
+  const statusOf = new Map(students.map(s => [s.id, cardStatus(cardOf.get(s.id))]));
+  const counts = { known: 0, learning: 0, shaky: 0, new: 0 };
+  for (const status of statusOf.values()) counts[status]++;
+  // One line at the top says whether anyone is missing a photo; the detail is under the list
+  let noPhotoLine = 'Who has no photo? Load your class list to find out';
+  if (pendingList) {
+    noPhotoLine = 'Check the columns of your class list';
+  } else if (cls.classList) {
+    const n = compareClassList(cls.classList.students, students).missing.length;
+    noPhotoLine = n === 0 ? 'Everyone on your class list has a photo' : `${plural(n, 'student', 'students')} on your class list ${n === 1 ? 'has' : 'have'} no photo`;
+  }
+
+  const chip = (key, label, n) => `<button class="chip ${view.filter === key ? 'active' : ''}" data-filter="${key}" aria-pressed="${view.filter === key}">${key === 'all' ? '' : `<span class="dot ${key}"></span>`}${label} <b>${n}</b></button>`;
+
   container.innerHTML = `
     <p class="students-class">${esc(cls.name)} · ${plural(students.length, 'student', 'students')}</p>
 
@@ -160,15 +185,24 @@ async function renderStudents() {
       Add a student
     </button>
     <p class="device-note">${LOCK_ICON}<span>Photos you add stay on this device.</span></p>
-
-    <div class="settings-section" id="classListSection">
-      ${renderClassListSection(cls, students)}
-    </div>
+    <button class="jump-link" id="jumpToClassList">${noPhotoLine}</button>
 
     <div class="settings-section">
       <h3>In this class</h3>
       ${students.length === 0 ? '<p class="settings-desc">No students yet.</p>' : `
-        <div class="student-list" role="list">
+        <div class="overview-chips" role="group" aria-label="Show students">
+          ${chip('all', 'All', students.length)}
+          ${chip('known', STATUS_LABELS.known, counts.known)}
+          ${chip('learning', STATUS_LABELS.learning, counts.learning)}
+          ${chip('shaky', STATUS_LABELS.shaky, counts.shaky)}
+          ${chip('new', STATUS_LABELS.new, counts.new)}
+        </div>
+        <div class="overview-tools">
+          <input type="search" id="studentSearch" class="class-name-input" placeholder="Search by name or number" aria-label="Search students by name or number" autocomplete="off" spellcheck="false" value="${esc(view.query)}">
+          <button class="row-btn" id="facesToggle" aria-pressed="${view.faces}">${view.faces ? 'List' : 'Faces'}</button>
+        </div>
+        <p class="settings-desc hidden" id="noMatches" role="status">No students match.</p>
+        <div class="student-list ${view.faces ? 'faces' : ''}" id="studentList" role="list">
           ${students.map(s => {
             let thumb;
             if (s.thumbnail) {
@@ -181,11 +215,14 @@ async function renderStudents() {
             const consent = s.photoConsent && s.photoConsent.agreed
               ? `<span class="student-consent">Photo added by you · consent ticked ${esc(formatDate(s.photoConsent.date))}</span>`
               : '';
+            const status = statusOf.get(s.id);
+            const searchText = [fullName(s), s.preferredName, s.studentId].join(' ').toLowerCase();
             return `
-              <div class="student-row" role="listitem" data-id="${s.id}">
+              <div class="student-row" role="listitem" data-id="${s.id}" data-status="${status}" data-search="${esc(searchText)}">
                 ${thumb}
                 <div class="student-meta">
                   <span class="student-name">${esc(fullName(s))}</span>
+                  <span class="status-tag ${status}"><span class="dot ${status}"></span>${STATUS_LABELS[status]}</span>
                   ${s.studentId ? `<span class="student-number">${esc(s.studentId)}</span>` : ''}
                   ${nameNotes(s) ? `<span class="student-number student-notes">${esc(nameNotes(s))}</span>` : ''}
                   ${consent}
@@ -199,9 +236,51 @@ async function renderStudents() {
         </div>
       `}
     </div>
+
+    <div class="settings-section" id="classListSection">
+      ${renderClassListSection(cls, students)}
+    </div>
   `;
 
   document.getElementById('addStudentBtn').onclick = () => openForm({ mode: 'add' });
+  document.getElementById('jumpToClassList').onclick = () => scrollToClassList();
+  if (pendingList) scrollToClassList();
+
+  // Overview: filter chips, search, and the faces view. Rows are hidden, not redrawn.
+  const applyView = () => {
+    const list = document.getElementById('studentList');
+    if (!list) return;
+    const query = view.query.trim().toLowerCase();
+    let shown = 0;
+    list.querySelectorAll('.student-row').forEach(row => {
+      const ok = (view.filter === 'all' || row.dataset.status === view.filter) && (!query || row.dataset.search.includes(query));
+      row.classList.toggle('hidden', !ok);
+      if (ok) shown++;
+    });
+    document.getElementById('noMatches').classList.toggle('hidden', shown > 0);
+  };
+  container.querySelectorAll('.chip').forEach(btn => {
+    btn.onclick = () => {
+      view.filter = btn.dataset.filter;
+      container.querySelectorAll('.chip').forEach(b => {
+        b.classList.toggle('active', b === btn);
+        b.setAttribute('aria-pressed', String(b === btn));
+      });
+      applyView();
+    };
+  });
+  const search = document.getElementById('studentSearch');
+  if (search) search.oninput = () => { view.query = search.value; applyView(); };
+  const facesToggle = document.getElementById('facesToggle');
+  if (facesToggle) {
+    facesToggle.onclick = () => {
+      view.faces = !view.faces;
+      document.getElementById('studentList').classList.toggle('faces', view.faces);
+      facesToggle.textContent = view.faces ? 'List' : 'Faces';
+      facesToggle.setAttribute('aria-pressed', String(view.faces));
+    };
+  }
+  applyView();
 
   container.querySelectorAll('.student-edit-btn').forEach(btn => {
     btn.onclick = async () => {
@@ -345,7 +424,6 @@ async function loadClassListFile(file) {
   } else {
     pendingList = loaded;
     await renderStudents();
-    document.getElementById('classListSection')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
 }
 
@@ -390,6 +468,7 @@ async function saveClassList(loaded) {
   pendingList = null;
   lastRows = loaded;
   await renderStudents();
+  scrollToClassList();
   showToast(`Class list loaded: ${plural(list.length, 'student', 'students')}`, 'success');
 }
 
@@ -782,7 +861,7 @@ function showError(message, focusId) {
   if (el) {
     el.textContent = message;
     el.classList.remove('hidden');
-    el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    el.scrollIntoView({ block: 'nearest' });
   }
   if (focusId) document.getElementById(focusId)?.focus();
 }

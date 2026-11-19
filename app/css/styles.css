@@ -1677,6 +1677,22 @@ html { height: -webkit-fill-available; }
 
 .device-note svg { flex-shrink: 0; }
 
+.jump-link {
+  display: block;
+  margin: -14px 0 22px;
+  padding: 6px 0;
+  background: none;
+  border: none;
+  color: var(--purple);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font);
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
 .student-list,
 .missing-list {
   display: flex;
@@ -1785,6 +1801,78 @@ html { height: -webkit-fill-available; }
   outline: 3px dashed var(--purple);
   outline-offset: 4px;
 }
+
+/* Class overview: who you know, search, filters, faces */
+.overview-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: none;
+  border: 1.5px solid var(--gray-300);
+  border-radius: 20px;
+  color: var(--gray-700);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.chip b { font-weight: 800; }
+.chip:hover { border-color: var(--purple); }
+.chip.active { background: var(--purple); border-color: var(--purple); color: #fff; }
+
+.dot.known { background: var(--green); }
+.dot.shaky { background: var(--red); }
+.dot.learning { background: var(--orange); }
+.dot.new { background: var(--gray-400); }
+.chip .dot, .status-tag .dot { width: 8px; height: 8px; flex-shrink: 0; }
+.chip.active .dot { box-shadow: 0 0 0 1.5px #fff; }
+
+.overview-tools { display: flex; gap: 8px; align-items: center; }
+.overview-tools .class-name-input { padding: 10px 14px; }
+.overview-tools .row-btn { flex-shrink: 0; padding: 10px 14px; }
+
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+/* Faces view: bigger photos to scan when someone is standing in front of you */
+.student-list.faces {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 10px;
+}
+
+.student-list.faces .student-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 6px 6px 8px;
+  text-align: center;
+}
+
+.student-list.faces .student-thumb {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 0.86 / 1;
+  border-radius: var(--radius-xs);
+}
+
+.student-list.faces .student-thumb-none { font-size: 22px; }
+.student-list.faces .student-meta { align-items: center; }
+.student-list.faces .student-name { font-size: 13px; line-height: 1.25; }
+.student-list.faces .student-actions,
+.student-list.faces .student-number,
+.student-list.faces .student-consent { display: none; }
 
 /* Column mapping step */
 .mapping-step {
