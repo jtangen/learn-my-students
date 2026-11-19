@@ -183,6 +183,47 @@
 </div>
 
 <!-- ══════════════════════════════════ -->
+<!-- STUDENTS SCREEN                    -->
+<!-- ══════════════════════════════════ -->
+<div id="studentsScreen" class="screen">
+  <div class="settings-card">
+    <div class="settings-header">
+      <button class="back-btn" id="studentsBackBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        Back
+      </button>
+      <h2>Students</h2>
+    </div>
+    <div id="studentsContent">
+      <!-- Dynamically populated by students.js -->
+    </div>
+    <input type="file" id="classListInput" accept=".csv,.tsv,.txt,text/csv" class="hidden">
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- STUDENT FORM SCREEN (add / edit)   -->
+<!-- ══════════════════════════════════ -->
+<div id="studentFormScreen" class="screen">
+  <div class="settings-card">
+    <div class="settings-header">
+      <button class="back-btn" id="studentFormBackBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        Back
+      </button>
+      <h2 id="studentFormTitle">Add a student</h2>
+    </div>
+    <div id="studentFormContent">
+      <!-- Dynamically populated by students.js -->
+    </div>
+    <!-- A picture file (or, on a phone, the photo library) -->
+    <input type="file" id="studentPhotoInput" accept="image/*" class="hidden">
+    <!-- On a phone this opens the camera -->
+    <input type="file" id="studentCameraInput" accept="image/*" capture="environment" class="hidden">
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
 <!-- LOADING OVERLAY                    -->
 <!-- ══════════════════════════════════ -->
 <div class="loading-overlay" id="loadingOverlay">

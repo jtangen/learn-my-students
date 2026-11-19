@@ -8,6 +8,7 @@ import { initQuiz, showNextCard, cleanup as cleanupQuiz } from './quiz.js';
 import { getDailyGoal, setDailyGoal, GOAL_LEVELS, checkStreak, getStreakData, recordSessionComplete, buildSessionSummary, checkMilestone } from './stats.js';
 import { showScreen, showLoading, hideLoading, showToast, esc, isMobile, isIOS, confirmDialog, renderProgressRing } from './ui.js';
 import { isSpeechSupported } from './speech.js';
+import { initStudents, openStudentsScreen } from './students.js';
 let currentClassId = null;
 let scheduler = null;
 
@@ -96,6 +97,19 @@ async function init() {
   // Load existing classes
   await renderSetupScreen();
 
+  // Students screens (add, edit, delete, class list)
+  initStudents({
+    done: async () => {
+      await renderSetupScreen();
+      showScreen('setup');
+    }
+  });
+
+  // These two screens need a class to be chosen first, so a reload starts from the class list
+  if (window.location.hash === '#/students' || window.location.hash === '#/studentForm') {
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
+
   // Handle ?demo=1 auto-import
   await handleDemoParam();
 
@@ -157,6 +171,8 @@ function route() {
     '#/settings': 'settings',
     '#/summary': 'summary',
     '#/dashboard': 'dashboard',
+    '#/students': 'students',
+    '#/studentForm': 'studentForm',
   };
   const screen = routes[hash];
   if (screen) {
@@ -198,6 +214,7 @@ async function renderSetupScreen() {
           <span class="class-count">${c.studentCount || 0} students</span>
         </div>
         <div class="class-actions">
+          <button class="class-students-btn" data-id="${c.id}" aria-label="Students in ${esc(c.name)}: add, edit or delete">Students</button>
           <button class="class-study-btn" data-id="${c.id}" aria-label="Study ${esc(c.name)}">Study</button>
           <button class="class-delete-btn" data-id="${c.id}" title="Delete" aria-label="Delete ${esc(c.name)}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
@@ -209,6 +226,9 @@ async function renderSetupScreen() {
     // Attach handlers
     classList.querySelectorAll('.class-study-btn').forEach(btn => {
       btn.onclick = () => startStudySession(parseInt(btn.dataset.id));
+    });
+    classList.querySelectorAll('.class-students-btn').forEach(btn => {
+      btn.onclick = () => openStudentsScreen(parseInt(btn.dataset.id));
     });
     classList.querySelectorAll('.class-delete-btn').forEach(btn => {
       btn.onclick = async () => {
