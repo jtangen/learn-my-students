@@ -34,6 +34,16 @@
       </div>
     </div>
 
+    <!-- First visit: shown until there is a class -->
+    <div id="firstVisit" class="first-visit hidden">
+      <p class="first-visit-lead">Learn your students' names before you meet them. Bring in their photos, then practise for a few minutes a day.</p>
+      <button id="demoBtn" class="primary-btn">Try it with a demo class</button>
+      <p class="format-hint">20 made-up students. Delete it whenever you like.</p>
+      <div class="section-divider">
+        <span>Or bring in your own class</span>
+      </div>
+    </div>
+
     <!-- New Import -->
     <div class="import-section">
       <div class="class-name-row">
@@ -59,14 +69,23 @@
       <input type="file" id="zipInput" accept=".zip" class="hidden">
 
       <p class="format-hint">Photos should be named: <code>LastName, FirstName (ID).jpg</code></p>
+
+      <details class="photo-help">
+        <summary>Where do I get my students' photos?</summary>
+        <p><strong>At UQ:</strong> log in to <a href="https://portal.my.uq.edu.au" target="_blank" rel="noopener">portal.my.uq.edu.au</a>, choose My courses, pick your course, open the Student headshots tab under Course Information, and press Download .zip. Upload that zip here as it is. Only Course Coordinators can do this.</p>
+        <p><strong>Elsewhere:</strong> most universities offer a photo roster through their learning or student system. Name each photo like <code>Smith, Jane (12345678).jpg</code>, then choose the folder or a zip of it.</p>
+        <p>Students with no photo on file are not in the download. Once the class is in, open Students to add them.</p>
+      </details>
     </div>
 
     <div class="setup-footer">
-      <a href="/" class="icon-btn" title="About &amp; Demo">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+      <a href="/" class="icon-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        <span>About</span>
       </a>
-      <button class="icon-btn" id="settingsBtn" title="Settings">
+      <button class="icon-btn" id="settingsBtn">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        <span>Settings</span>
       </button>
       <div id="deviceHint" class="device-hint"></div>
     </div>

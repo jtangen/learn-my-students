@@ -24,6 +24,11 @@ async function handleDemoParam() {
   // Clear param to prevent re-triggering
   history.replaceState(null, '', window.location.pathname + window.location.hash);
 
+  await loadDemoClass();
+}
+
+/** Load the made-up demo class (or open it, if it is already here) and start studying. */
+async function loadDemoClass() {
   // Skip if demo class already exists
   const classes = await getClasses();
   if (classes.some(c => c.name.includes('Demo'))) {
@@ -275,6 +280,12 @@ async function renderSetupScreen() {
       };
     });
   }
+
+  // First visit: say what this is and offer the demo class
+  const firstVisit = document.getElementById('firstVisit');
+  if (firstVisit) firstVisit.classList.toggle('hidden', classes.length > 0);
+  const demoBtn = document.getElementById('demoBtn');
+  if (demoBtn) demoBtn.onclick = () => loadDemoClass();
 
   // Import handlers
   setupImportHandlers();

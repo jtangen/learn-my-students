@@ -269,6 +269,20 @@ html { height: -webkit-fill-available; }
 }
 
 .icon-btn:hover { color: var(--purple); border-color: var(--purple); }
+.icon-btn { align-items: center; gap: 6px; font-size: 13px; font-weight: 600; font-family: var(--font); }
+.setup-footer { justify-content: flex-start; gap: 8px; }
+
+/* First visit */
+.first-visit { text-align: center; }
+.first-visit-lead { font-size: 15px; line-height: 1.5; margin-bottom: 16px; }
+.first-visit .primary-btn { width: 100%; }
+.first-visit .format-hint { margin-top: 8px; }
+
+.photo-help { margin-top: 14px; font-size: 13px; line-height: 1.55; color: var(--gray-700); }
+.photo-help summary { color: var(--purple); font-weight: 600; cursor: pointer; text-align: center; padding: 6px 0; }
+.photo-help p { margin-top: 10px; }
+.photo-help a { color: var(--purple); }
+.photo-help code { background: var(--gray-100); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
 
 .device-hint {
   font-size: 12px;
