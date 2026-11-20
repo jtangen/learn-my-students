@@ -4,6 +4,7 @@
 // ═══════════════════════════════════
 import { getDueCards, getNewCards, getFSRSCardsByClass, saveFSRSCard, getStudentsByClass } from './db.js';
 import { reviewCard, Grade, State } from './fsrs.js';
+import { chooseDistractors } from './name-guess.js';
 
 const BATCH_SIZE = 6;        // New students per session
 const MIN_QUEUE_AHEAD = 3;   // Keep at least this many cards queued
@@ -202,40 +203,15 @@ export class SessionScheduler {
   }
 
   /**
-   * Get random distractor names for multiple-choice.
-   * Prefers distractors whose first name has the same likely gender
-   * (based on name ending heuristics) to avoid trivially obvious wrong answers.
+   * Get the wrong answers for a multiple-choice question.
+   * They are drawn from names of the same likely gender as the right one
+   * where the first name allows a guess (see name-guess.js), so that a
+   * question can't be answered just by ruling names out.
    */
   getDistractors(correctStudentId, count = 3) {
     const correct = this.students.get(correctStudentId);
     const others = [...this.students.values()].filter(s => s.id !== correctStudentId);
-
-    // If not enough students for full distractor set, return what we have
-    if (!correct || others.length <= count) {
-      return others.sort(() => Math.random() - 0.5);
-    }
-
-    // Split candidates by likely gender match
-    const correctGender = guessNameGender(correct.preferredName);
-    const sameGender = others.filter(s => guessNameGender(s.preferredName) === correctGender);
-    const diffGender = others.filter(s => guessNameGender(s.preferredName) !== correctGender);
-
-    // Prefer same-gender distractors, fill remainder randomly
-    const shuffledSame = sameGender.sort(() => Math.random() - 0.5);
-    const shuffledDiff = diffGender.sort(() => Math.random() - 0.5);
-
-    const result = [];
-    let si = 0, di = 0;
-    while (result.length < count) {
-      if (si < shuffledSame.length) {
-        result.push(shuffledSame[si++]);
-      } else if (di < shuffledDiff.length) {
-        result.push(shuffledDiff[di++]);
-      } else {
-        break;
-      }
-    }
-    return result;
+    return chooseDistractors(correct, others, count);
   }
 
   /**
@@ -410,56 +386,4 @@ export class SessionScheduler {
     spots.sort((a, b) => b.lapses - a.lapses);
     return spots.slice(0, limit);
   }
-}
-
-// ─── Name-based gender heuristic ───
-// Returns 'f', 'm', or 'u' (unknown). Uses common English name endings
-// and a short lookup of high-frequency names. Not perfect, but sufficient
-// to avoid obviously mismatched MC distractors.
-
-const FEMALE_NAMES = new Set([
-  'mary','emma','olivia','ava','sophia','isabella','mia','charlotte','amelia',
-  'harper','evelyn','abigail','emily','elizabeth','ella','madison','scarlett',
-  'victoria','aria','grace','chloe','camila','penelope','riley','layla','lily',
-  'nora','zoey','hannah','hazel','violet','aurora','savannah','audrey','brooklyn',
-  'bella','claire','skylar','lucy','paisley','natalie','anna','caroline','genesis',
-  'leah','aaliyah','allison','gabriella','alice','sadie','hailey','eva','emilia',
-  'autumn','quinn','nevaeh','piper','ruby','serenity','willow','taylor','madelyn',
-  'kaylee','naomi','sarah','alexa','stella','ellie','maya','sophie','tania',
-  'jessica','jennifer','ashley','amanda','stephanie','nicole','michelle','rachel',
-  'samantha','rebecca','katherine','catherine','megan','andrea','laura','linda',
-  'patricia','barbara','susan','karen','nancy','betty','margaret','sandra','donna',
-  'carol','ruth','sharon','helen','deborah','diana','julia','bonita','shanelle',
-  'alesha','elin','kenisha','cheuk','wing','raphita','nadia','nina','tara','lara',
-]);
-
-const MALE_NAMES = new Set([
-  'james','robert','john','michael','david','william','richard','joseph','thomas',
-  'charles','christopher','daniel','matthew','anthony','mark','donald','steven',
-  'paul','andrew','joshua','kenneth','kevin','brian','george','timothy','ronald',
-  'edward','jason','jeffrey','ryan','jacob','gary','nicholas','eric','jonathan',
-  'stephen','larry','justin','scott','brandon','benjamin','samuel','raymond',
-  'gregory','frank','alexander','patrick','jack','dennis','jerry','tyler','aaron',
-  'jose','adam','nathan','henry','peter','zachary','douglas','harold','kyle','noah',
-  'ethan','liam','mason','logan','aiden','jackson','sebastian','owen','caleb',
-  'luke','isaac','dylan','connor','harrison','theodore','derek','ayush','anderson',
-]);
-
-function guessNameGender(firstName) {
-  if (!firstName) return 'u';
-  const name = firstName.split(' ')[0].toLowerCase().trim();
-
-  // Direct lookup first
-  if (FEMALE_NAMES.has(name)) return 'f';
-  if (MALE_NAMES.has(name)) return 'm';
-
-  // Ending-based heuristics (works for many English/Romance names)
-  if (name.endsWith('a') || name.endsWith('ia') || name.endsWith('ina') ||
-      name.endsWith('ella') || name.endsWith('ette') || name.endsWith('lyn') ||
-      name.endsWith('een') || name.endsWith('ine')) return 'f';
-
-  if (name.endsWith('son') || name.endsWith('ton') || name.endsWith('ard') ||
-      name.endsWith('ert') || name.endsWith('old') || name.endsWith('ew')) return 'm';
-
-  return 'u';
 }

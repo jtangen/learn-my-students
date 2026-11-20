@@ -232,3 +232,36 @@ The network log is as in phase 1: the only requests that leave the machine are t
 - The numbered screenshots `01` to `25` were taken again at the end, so they show the finished branch. How those screens looked after phase 1 only is in `audit_before/` and the `_before` pictures.
 - Three fixes have nothing to photograph (audit 1, 15 and 16 are about timers, dates and what is recorded); their before and after are the numbers in the table above.
 - `CHANGES.md` and `AUDIT.md` are listed in `.vercelignore`, so they are not published if the branch is deployed.
+
+## After the merge: wrong answers that could be right (20 November 2026)
+
+On the branch `plausible-wrong-answers`. Not committed, merged or pushed when this was written; the live site still has the old behaviour.
+
+**What Jason saw on his iPhone.** He added his mum, Suzanne, to the demo class by photo (the photo worked). Her name then turned up as a wrong answer beside men's faces.
+
+**Why.** The app chooses wrong answers by guessing, from the first name only, whether a name is usually a woman's or a man's. It never used ethnicity and never looks at a photo. The guess came from two short lists (115 women's names, 80 men's) and a few endings. "Suzanne" was on neither list, and nor were seven of the ten men in the demo class (Nikhil, Dev, Lachlan, Rohan, Arjun, Jai, Tom). Names it couldn't place were treated as a group of their own, so Suzanne was drawn with those seven men. "Riley" was on the women's list; the demo's Riley is a man.
+
+**What changed.**
+- The guess and the choice moved to `app/js/name-guess.js` (added to the offline list; cache name is now `v8`).
+- Longer lists: 655 women's names, 599 men's, and 136 that are used for anyone (Riley, Alex, Sam, Wei) and are deliberately not guessed. (624, 572 and 125 as first written by hand; the rest were added after the check against Queensland's names, below.)
+- The order is now: names of the same likely gender, then names that can't be placed, then the other gender only when nothing else is left. When the right name can't be placed, the wrong answers come from the whole class.
+- It reads the name a student goes by first, then the name on the class list. Accents and hyphens are handled (José, Zoë, Jo-Anne).
+- It is still a guess from a first name. Nothing about it is stored or shown.
+
+**Tested.** On the demo class plus Suzanne, 20,000 questions per person, old code against new: questions with at least one wrong answer of the other gender went from 55.6% to 4.4%. All of the 4.4% is Riley, whose name can't be placed. Suzanne's own question had a man beside her every time before, and never after. Then in headless Chrome at phone size, with the app's own scheduler on its own records: 6,300 questions, 281 mixed, all Riley's; a session tapped through with no page errors.
+
+**How well it does on names it wasn't built from.** It is a list to look names up in. It does not learn, and it does not work anything out from a photo. Checked against names the hand-written lists were not built from: the top 100 girls' and boys' names registered in Queensland (Registry of Births, Deaths and Marriages, CC BY 3.0 AU).
+
+| Queensland's top 100 | Names | Old code: right / wrong / can't tell | New code, as first written: right / wrong / can't tell |
+|---|---|---|---|
+| 2007 | 201 | 109 / 2 / 90 | 177 / 0 / 24 |
+| Every year 1960 to 2005 (names used for one sex) | 560 | 248 / 3 / 309 | 465 / 0 / 95 |
+
+Counted by babies and not by names, the new code placed 90.6% (2007) and 95.6% (1960 to 2005), because the names it missed are the rarer ones. The six names Queensland's own lists show for both sexes (Jordan, Kerry, Ashley, Taylor, Shannon, Morgan) were all on the "anyone" list already. The 58 clear names it missed were then added, and 11 more were moved to "anyone", so these figures can't be repeated as a fair test on the same lists.
+
+What this does not show: names from outside the English-speaking world, and rarer names of any kind. Nothing here was tested on them, and it will do worse.
+
+**Not tested.** A real iPhone, Safari, or a real class list. Real classes will have more names it can't place than the demo does, especially given names written in English letters from Chinese, which mostly can't be guessed.
+
+**Not built: matching on ethnicity.** It would mean guessing each student's ethnicity from their photo or their name. Left for Jason to decide; the suggestion put to him instead was to remember his own mix-ups and offer those names again.
+
