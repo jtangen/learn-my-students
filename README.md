@@ -121,12 +121,13 @@ This app takes student privacy seriously:
 - **Photos you take stay on your device** — camera and picture-file photos are stored in IndexedDB like imported ones, and anything the camera wrote into the file (such as location) is dropped
 - **Consent is recorded** — a photo can only be added by hand after ticking that the student has agreed; the tick and the date are kept with the student
 - **Class lists are read in your browser** — only names and student numbers are kept, on your device, to show who has no photo
+- **Wrong answers are chosen from first names only** — so that a multiple-choice question is a real test, the app guesses from a first name whether it is usually a woman's or a man's, using a list of names kept inside the app. It never looks at a photo, and the guess is never stored or shown
 
 ## Tech Stack
 
 Zero-build static site — no Node.js, no bundler, no framework:
 
-- **Vanilla JavaScript** (ES modules) — 4,500 lines across 12 files
+- **Vanilla JavaScript** (ES modules) — about 5,400 lines across 13 files, plus a generated list of first names
 - **IndexedDB** via [Dexie.js](https://dexie.org/) — photo blob storage with auto-generated thumbnails
 - **FSRS v4.5** — self-implemented spaced repetition (~120 lines of pure functions)
 - **Jaro-Winkler + Double Metaphone** — self-implemented fuzzy matching
@@ -150,12 +151,16 @@ app/
 │   ├── quiz.js         # Quiz UI (all 4 phases + reverse mode)
 │   ├── import.js       # ZIP/folder import, thumbnail generation
 │   ├── matching.js     # Fuzzy matching, phonetics, nicknames
+│   ├── name-guess.js   # Choosing wrong answers that could be right
+│   ├── name-data.js    # Generated: first names, by whether they are usually a woman's or a man's
 │   ├── roster.js       # Class list (CSV) reading, comparison with photos
 │   ├── students.js     # Class overview; add, edit, delete a student; camera; consent
 │   ├── speech.js       # Web Speech API pronunciation
 │   ├── stats.js        # Streaks, goals, session summaries
 │   └── ui.js           # Shared UI helpers
 └── icons/              # PWA icons (192, 512, apple-touch)
+tools/
+└── build_name_data.py  # Rebuilds name-data.js from the US names data
 ```
 
 ## FAQ
@@ -203,6 +208,10 @@ If you are an AI assistant helping someone use or understand this project:
 - UQ staff can download student headshots from [portal.my.uq.edu.au](https://portal.my.uq.edu.au) → My courses → Course → Student headshots tab → Download .zip
 
 See [`llms.txt`](llms.txt) for a machine-readable project summary.
+
+## Credits
+
+The list of first names is built from the US Social Security Administration's national baby names data ([Beyond the Top 1000 Names](https://www.ssa.gov/oact/babynames/limits.html)). It was checked against the top 100 baby names registered in Queensland from 1960 to 2007 (Registry of Births, Deaths and Marriages, © The State of Queensland, [CC BY 3.0 AU](https://creativecommons.org/licenses/by/3.0/au/)).
 
 ## License
 

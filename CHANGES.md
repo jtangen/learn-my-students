@@ -265,3 +265,26 @@ What this does not show: names from outside the English-speaking world, and rare
 
 **Not built: matching on ethnicity.** It would mean guessing each student's ethnicity from their photo or their name. Left for Jason to decide; the suggestion put to him instead was to remember his own mix-ups and offer those names again.
 
+## A much bigger list of names (20 November 2026)
+
+Built on the branch `bigger-name-list` at Jason's word ("let's go with the bigger list"), after the fix above went live.
+
+**What changed.**
+- `app/js/name-data.js` is new and generated: 21,967 women's names, 12,712 men's and 3,916 that are used for both, from the US Social Security Administration's national names data (births 1940 to 2025). `tools/build_name_data.py` rebuilds it. The file is 275 KB (100 KB as sent, compressed) and is on the offline list; the cache name is now `v9`.
+- A name is in it when at least 100 people have it, and it is placed only when we can be confident that at least 90% of them are one sex. Rare names have to be nearly all one way.
+- The hand-written lists are still read first (652 women's names, 594 men's, 159 for anyone). Nineteen hand-placed names that the US data shows as mixed moved to "anyone" (Akira, Ali, Krishna, Marion, Rory and others), unless Queensland's lists agreed or at least 80% of the US data pointed the same way.
+- The name endings were tried on 39,635 rarer names the big list leaves out. Only those right at least 95% of the time were kept (-a, -ette, -anne, -ard, -ert, -ew). Seven were dropped (-elle, -lyn, -een, -ine, -son, -ton, -old).
+
+**Tested.**
+- The big list alone, on Queensland's names, which it was not built from: 2007, 187 of 201 right, none wrong, 14 can't tell; 1960 to 2005, 518 of 560 right, 1 wrong (Lindsay, a woman's name in the US and a man's in Queensland then; the hand list already has it under "anyone"), 41 can't tell.
+- The hand lists against the big list, two sources made separately: of the 1,254 names typed by hand, the US data places 1,167 the same way and none the other way; 47 it shows as mixed and 40 it doesn't hold.
+- Labels made from alternate years of the US data were borne out by the other years: 1 name in about 25,000 came out the other way.
+- The demo class plus Suzanne, 20,000 questions a person: 4.4% with a wrong answer of the other gender, all Riley's, as before. The app in headless Chrome at phone size: 6,300 questions from its own scheduler, 275 mixed, all Riley's; no page errors. The first guesses, which build the lists, took about 4 milliseconds in Node.
+
+**What it still can't do.**
+- Most given names from Chinese written in English letters. They are rare or mixed in the US data (Yuxin, Zihan, Jiayi), so the app says it can't tell, which is the honest answer.
+- Sikh names such as Harpreet and Gurpreet, and Vietnamese names such as Anh and Linh: used for anyone, and listed that way.
+- Men's names ending in -a from India, Indonesia and Japan that are on no list would be guessed as women's. The common ones are on the lists.
+- There was no list of names from outside the English-speaking world, with the answers, to test against. That part rests on the US data having them.
+- It never looks at a photo.
+
