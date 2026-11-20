@@ -16,6 +16,7 @@ let currentIsReverse = false;
 let questionStartTime = 0;
 let isPlaying = false;
 let activePhotoURL = null;
+let pairPhotoURLs = [];     // the two photos shown side by side after a mix-up
 let studyTimer = null;   // the 4-second auto-advance on a study card
 
 function clearStudyTimer() {
@@ -62,6 +63,7 @@ export async function showNextCard() {
     URL.revokeObjectURL(activePhotoURL);
     activePhotoURL = null;
   }
+  clearPair();
 
   // Update stats display
   updateStatsDisplay();
@@ -185,8 +187,12 @@ function handleMultipleChoiceAnswer(clickedBtn, options) {
 
   const grade = isCorrect ? Grade.GOOD : Grade.AGAIN;
 
+  // A wrong name is a mix-up with the student whose name it is
+  const picked = isCorrect ? null : options.find(s => s.id === parseInt(clickedBtn.dataset.studentId));
+  const mixUp = picked ? { student: picked, how: 'said' } : null;
+
   // Show answer after brief delay
-  setTimeout(() => showAnswerPhase(isCorrect, grade, responseTime), 800);
+  setTimeout(() => showAnswerPhase(isCorrect, grade, responseTime, undefined, mixUp), 800);
 }
 
 function renderHintedRecallPhase() {
@@ -298,7 +304,11 @@ function handleReverseAnswer(clickedBtn) {
   });
 
   const grade = isCorrect ? Grade.GOOD : Grade.AGAIN;
-  setTimeout(() => showAnswerPhase(isCorrect, grade, responseTime), 800);
+
+  // A wrong face is a mix-up with the student whose face it is
+  const picked = isCorrect ? null : scheduler.students.get(parseInt(clickedBtn.dataset.studentId));
+  const mixUp = picked ? { student: picked, how: 'picked' } : null;
+  setTimeout(() => showAnswerPhase(isCorrect, grade, responseTime, undefined, mixUp), 800);
 }
 
 // ─── Answer Handling ───
@@ -325,7 +335,29 @@ function handleTypedAnswer(isHinted) {
     grade = Grade.EASY;
   }
 
-  showAnswerPhase(isCorrect, grade, responseTime, result.feedback);
+  // A wrong answer that is someone else's name is a mix-up with that student
+  const other = result.grade === Grade.AGAIN ? namedSomeoneElse(value) : null;
+  const mixUp = other ? { student: other, how: 'said' } : null;
+
+  showAnswerPhase(isCorrect, grade, responseTime, result.feedback, mixUp);
+}
+
+/**
+ * If what was typed is the name of one other student in the class, that
+ * student. Nothing if it fits nobody, or more than one (two Emmas, or "Sam"
+ * with a Samuel and a Samantha): then there is no telling who was meant.
+ */
+function namedSomeoneElse(typed) {
+  let found = null;
+  for (const s of scheduler.students.values()) {
+    if (s.id === currentStudent.id) continue;
+    const r = matchStudentAnswer(typed, s);
+    if (r && r.grade >= Grade.GOOD) {
+      if (found) return null;
+      found = s;
+    }
+  }
+  return found;
 }
 
 function handleSkip() {
@@ -339,11 +371,18 @@ function handleSkip() {
   showAnswerPhase(false, Grade.AGAIN, responseTime, 'No worries — you\'ll get it next time!');
 }
 
-async function showAnswerPhase(isCorrect, grade, responseTime, feedbackText) {
+async function showAnswerPhase(isCorrect, grade, responseTime, feedbackText, mixUp = null) {
   const inputArea = document.getElementById('inputArea');
 
-  // Show the photo (in case of reverse mode)
-  if (currentIsReverse) {
+  if (mixUp) {
+    // The two who were mixed up, side by side, and a note of it on the card
+    scheduler.noteMixUp(currentCard, mixUp.student.id);
+    showPair(document.getElementById('photoContainer'), currentStudent, mixUp.student, mixUp.how);
+    feedbackText = mixUp.how === 'picked'
+      ? `Not quite. That's ${firstNameOf(mixUp.student)}.`
+      : `Not quite. You said ${firstNameOf(mixUp.student)}.`;
+  } else if (currentIsReverse) {
+    // Show the photo (in case of reverse mode)
     const container = document.getElementById('photoContainer');
     displayPhoto(container, currentStudent);
   }
@@ -425,6 +464,35 @@ function displayPhoto(container, student) {
     const initials = (student.preferredName[0] || '') + (student.familyName[0] || '');
     container.innerHTML = `<div class="no-photo-large">${esc(initials.toUpperCase())}</div>`;
   }
+}
+
+/**
+ * After a mix-up: the student it was, and the student whose name (or face)
+ * was given, side by side with their names, so the two can be told apart.
+ */
+function showPair(container, right, given, how) {
+  clearPair();
+  const face = (student, tag, cls) => {
+    const blob = student.photo || student.thumbnail;
+    let picture;
+    if (blob) {
+      const url = URL.createObjectURL(blob);
+      pairPhotoURLs.push(url);
+      picture = `<img src="${url}" alt="">`;
+    } else {
+      picture = `<div class="no-photo-large">${esc(((student.preferredName[0] || '') + (student.familyName[0] || '')).toUpperCase())}</div>`;
+    }
+    return `<figure class="pair-face ${cls}">${picture}<figcaption><span class="pair-tag">${tag}</span><span class="pair-name">${esc(nameOf(student))}</span></figcaption></figure>`;
+  };
+  container.classList.add('photo-pair');
+  container.innerHTML = face(right, 'This is', 'pair-right') + face(given, how === 'picked' ? 'You picked' : 'You said', 'pair-given');
+}
+
+function clearPair() {
+  pairPhotoURLs.forEach(url => URL.revokeObjectURL(url));
+  pairPhotoURLs = [];
+  const container = document.getElementById('photoContainer');
+  if (container) container.classList.remove('photo-pair');
 }
 
 function handlePronunciation() {
@@ -578,4 +646,5 @@ export function cleanup() {
   }
   revokeAllPhotoURLs();
   document.removeEventListener('keydown', handleKeyboard);
+  clearPair();
 }

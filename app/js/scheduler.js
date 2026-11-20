@@ -211,7 +211,45 @@ export class SessionScheduler {
   getDistractors(correctStudentId, count = 3) {
     const correct = this.students.get(correctStudentId);
     const others = [...this.students.values()].filter(s => s.id !== correctStudentId);
-    return chooseDistractors(correct, others, count);
+    return chooseDistractors(correct, others, count, Math.random, this.mixedUpWith(correctStudentId));
+  }
+
+  /**
+   * Note a mix-up: for this card's student, the name (or the face) of another
+   * student was given. It is kept on the card, as a count per student, and is
+   * saved when the card's result is recorded straight afterwards.
+   */
+  noteMixUp(card, otherStudentId) {
+    const other = Number(otherStudentId);
+    if (!card || !Number.isFinite(other) || other === card.studentId || !this.students.has(other)) return;
+    const mixUps = { ...(card.mixUps || {}) };
+    mixUps[other] = (mixUps[other] || 0) + 1;
+    card.mixUps = mixUps;
+  }
+
+  /**
+   * The students this one has been mixed up with, most often first. It counts
+   * both ways round: giving Dev's name for Rohan's face makes each a good
+   * wrong answer for the other. Students since deleted are left out.
+   */
+  mixedUpWith(studentId) {
+    const counts = new Map();
+    const add = (id, n) => {
+      id = Number(id);
+      if (id !== studentId && this.students.has(id) && n > 0) counts.set(id, (counts.get(id) || 0) + n);
+    };
+    for (const card of this.cards.values()) {
+      if (!card.mixUps) continue;
+      if (card.studentId === studentId) {
+        for (const [id, n] of Object.entries(card.mixUps)) add(id, n);
+      } else if (card.mixUps[studentId]) {
+        add(card.studentId, card.mixUps[studentId]);
+      }
+    }
+    return [...counts.entries()]
+      .map(([id, n]) => ({ student: this.students.get(id), n, tie: Math.random() }))
+      .sort((a, b) => b.n - a.n || a.tie - b.tie)
+      .map(x => x.student);
   }
 
   /**

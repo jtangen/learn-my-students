@@ -288,3 +288,21 @@ Built on the branch `bigger-name-list` at Jason's word ("let's go with the bigge
 - There was no list of names from outside the English-speaking world, with the answers, to test against. That part rests on the US data having them.
 - It never looks at a photo.
 
+## Remembering mix-ups (20 November 2026)
+
+Built on the branch `remember-mix-ups` at Jason's word ("Build it"), then merged into `main` and pushed on 20 November 2026 when he had seen a picture of it and said "Push".
+
+**What it does.**
+- **Notices a mix-up.** Pick the wrong name for a face, type another student's name, or pick the wrong face for a name. A typed answer counts only when it is wrong for this student and is the name of exactly one other student in the class ("Sam", with a Samuel and a Samantha, tells us nothing). "I don't know" and a wrong answer that is nobody's name are not mix-ups.
+- **Shows the two side by side, straight away.** The photo area splits in two: "This is Mei Li" and "You said Sophie Chen" (or "You picked", for a face). The message reads "Not quite. You said Sophie."
+- **Keeps a note of the pair**, as a count on the card of the student who was on screen (`mixUps`). It is saved with the card's result, so it travels in a backup with the rest of the progress. Nothing else about the card or its schedule changes.
+- **Uses the pair for wrong answers.** In a multiple-choice or pick-the-face question, the people this student has been mixed up with take the first places, most often first, and it counts both ways round. The rest are chosen by name as before.
+
+**Where the note gets used, plainly.** Multiple choice is asked once for each student, the first time they are tested, and again only while it is being got wrong. Forgetting someone later does not send them back to it: they stay on typing. Pick-the-face questions are a setting that is off unless turned on. So the note changes the options in fewer places than the side-by-side appears, and the side-by-side is the larger part of this change.
+
+**Tested**, on the demo class in headless Chrome at phone size, with real taps and typing (22 checks, all passed): the side-by-side after a wrong name, a typed name and a wrong face, with the right names, labels and message; nothing spilling off the side of a phone; the side-by-side gone on the next card; the same face coming back with the mixed-up name among its options; the note read back from the database by a new session, both ways round, and always among the other's wrong answers over 200 draws; a backup saved and restored keeping the notes; a deleted student being left out without trouble; no page errors. Cards from before this change have no notes and behave as they did.
+
+**Not tested.** A real iPhone, Safari, a real class.
+
+**Not built.** A question, after a mix-up, that asks you to choose between the two. A list of your mix-ups in the class overview or the session summary.
+

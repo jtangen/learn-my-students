@@ -416,6 +416,54 @@ html { height: -webkit-fill-available; }
   -webkit-user-drag: none;
 }
 
+/* After a mix-up: the two students side by side */
+.photo-container.photo-pair {
+  aspect-ratio: 1.5 / 1;
+  align-items: stretch;
+  gap: 2px;
+  background: #fff;
+}
+
+.pair-face {
+  flex: 1 1 50%;
+  min-width: 0;
+  margin: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f0e8f5, #e8e0ef);
+  overflow: hidden;
+}
+
+.pair-face figcaption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 26px 8px 8px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0));
+  color: #fff;
+  text-align: center;
+  line-height: 1.25;
+}
+
+.pair-tag {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.92;
+}
+
+.pair-name {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.pair-face .no-photo-large { font-size: 48px; }
+
 .no-photo-large {
   font-size: 72px;
   color: #c4a8d8;
@@ -2240,6 +2288,12 @@ html { height: -webkit-fill-available; }
 
 [data-theme="dark"] .photo-container {
   background: linear-gradient(135deg, #1a1830, #222240);
+}
+[data-theme="dark"] .pair-face {
+  background: linear-gradient(135deg, #1a1830, #222240);
+}
+[data-theme="dark"] .photo-container.photo-pair {
+  background: #000;
 }
 
 [data-theme="dark"] .toast {

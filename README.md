@@ -36,6 +36,7 @@ Research shows that when instructors use student names, it helps students develo
 | **Add a Student by Photo** | Someone missing from the photo download? Add them by hand with your phone's camera, your laptop's camera, or a picture file. Replace a photo or delete a student any time. |
 | **Consent Built In** | A photo you add needs one tick: the student has agreed to it being taken and kept on your device. The tick and the date are stored with the student. |
 | **Find Who Has No Photo** | Load your class list (CSV) and see which students have no photo, each with an "Add photo" button. Copes with different column layouts, and asks when it can't tell. |
+| **Learns Your Mix-ups** | Call one student by another's name and the two are shown side by side, with their names. The app keeps a note of the pair, and each becomes a wrong answer for the other in later questions. |
 
 ## Quick Start
 
@@ -122,6 +123,7 @@ This app takes student privacy seriously:
 - **Consent is recorded** — a photo can only be added by hand after ticking that the student has agreed; the tick and the date are kept with the student
 - **Class lists are read in your browser** — only names and student numbers are kept, on your device, to show who has no photo
 - **Wrong answers are chosen from first names only** — so that a multiple-choice question is a real test, the app guesses from a first name whether it is usually a woman's or a man's, using a list of names kept inside the app. It never looks at a photo, and the guess is never stored or shown
+- **Your mix-ups stay with your progress** — which students you have mixed up is kept on your device with the rest of your progress, and goes into a backup file only if you save one
 
 ## Tech Stack
 

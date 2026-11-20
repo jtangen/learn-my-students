@@ -236,25 +236,36 @@ function shuffled(list, rand) {
 /**
  * Choose the wrong answers to sit beside `correct`.
  *
- * When the right name can be placed: names of the same likely gender first,
- * then names that can't be placed, and names of the other gender only when
- * there is nothing else. When it can't be placed: anyone in the class.
+ * `first` is the people this one has already been mixed up with, most often
+ * first. They take the first places: nothing makes a better wrong answer
+ * than a name you have actually given for this face.
+ *
+ * The rest are chosen by name. When the right name can be placed: names of
+ * the same likely gender first, then names that can't be placed, and names of
+ * the other gender only when there is nothing else. When it can't be placed:
+ * anyone in the class.
  */
-export function chooseDistractors(correct, others, count = 3, rand = Math.random) {
+export function chooseDistractors(correct, others, count = 3, rand = Math.random, first = []) {
   const pool = shuffled(others, rand);
   if (!correct || pool.length <= count) return pool;
 
+  const lead = first.filter(s => pool.includes(s)).slice(0, count);
+  if (lead.length === count) return lead;
+  const rest = pool.filter(s => !lead.includes(s));
+  const need = count - lead.length;
+
   const target = guessStudentGender(correct);
-  if (target === 'u') return pool.slice(0, count);
+  if (target === 'u') return [...lead, ...rest.slice(0, need)];
 
   const rank = (s) => {
     const guess = guessStudentGender(s);
     return guess === target ? 0 : guess === 'u' ? 1 : 2;
   };
   // The sort is stable, so the shuffle survives within each rank.
-  return pool
+  const byName = rest
     .map(s => ({ s, r: rank(s) }))
     .sort((x, y) => x.r - y.r)
-    .slice(0, count)
+    .slice(0, need)
     .map(x => x.s);
+  return [...lead, ...byName];
 }
